@@ -99,7 +99,6 @@
     &--active {
       background: var(--btn-primary-bg);
       color: var(--text-on-gold);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
     }
   }
 
@@ -161,17 +160,10 @@
     border: 1px solid var(--border-subtle);
     border-radius: 20px;
     overflow: hidden;
-    transition:
-      box-shadow 0.2s,
-      border-color 0.2s;
-
-    &:hover {
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
-    }
+    transition: border-color 0.2s;
 
     &--open {
       border-color: var(--border-strong);
-      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.09);
 
       .app-admin__chevron {
         transform: rotate(180deg);

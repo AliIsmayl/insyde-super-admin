@@ -98,7 +98,6 @@
     &--active {
       background: var(--btn-primary-bg);
       color: var(--text-on-gold);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
     }
   }
 
@@ -646,7 +645,6 @@
     align-items: center;
     gap: 14px;
     text-align: center;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
     animation: archSlideUp 0.25s ease;
   }
 

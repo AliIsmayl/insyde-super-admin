@@ -19,7 +19,6 @@
     border: 1px solid var(--border-subtle);
     border-radius: 25px;
     padding: 25px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
 
     .list-header {
       display: flex;
@@ -359,7 +358,6 @@
       display: flex;
       flex-direction: column;
       gap: 30px;
-      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.02);
 
       /* --- YARATMA REJİMİ XÜSUSİ DİZAYNI --- */
       &.create-mode-card {
@@ -430,7 +428,6 @@
                 transition: 0.3s;
                 &:focus {
                   border-color: var(--border-focus);
-                  box-shadow: 0 0 0 3px rgba(200, 167, 94, 0.15);
                 }
               }
             }
@@ -454,7 +451,6 @@
             height: 90px;
             border-radius: 25px;
             object-fit: cover;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
             border: 2px solid var(--border-subtle);
           }
           .ph-titles {
@@ -549,7 +545,6 @@
             transition: 0.3s;
             &:focus {
               border-color: var(--border-focus);
-              box-shadow: 0 0 0 3px rgba(200, 167, 94, 0.15);
             }
           }
           .static-data {
@@ -630,7 +625,6 @@
                 transparent
               );
               border: 1px solid var(--border-focus);
-              box-shadow: 0 4px 15px rgba(200, 167, 94, 0.08);
             }
             .plat-left {
               display: flex;
@@ -753,10 +747,8 @@
           &.save-btn {
             background-color: var(--btn-primary-bg);
             color: var(--text-on-gold);
-            box-shadow: var(--btn-primary-shadow);
             &:hover {
               transform: translateY(-2px);
-              box-shadow: 0 6px 20px rgba(200, 167, 94, 0.4);
             }
           }
         }
