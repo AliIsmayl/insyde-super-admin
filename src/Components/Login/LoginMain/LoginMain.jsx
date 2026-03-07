@@ -33,7 +33,7 @@ function LoginMain() {
       <div className="login-card">
         <div className="login-header">
           <div className="logo-text">Insyde</div>
-          <h2>superadmin xoş gəlmisən 👋</h2>
+          <h2>Superadmin xoş gəlmisən 👋</h2>
           <p>Davam etmək üçün idarəetmə panelinə daxil olun.</p>
         </div>
 
