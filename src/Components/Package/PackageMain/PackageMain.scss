@@ -1,0 +1,429 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap");
+
+/* ──────────────────────────────────────────────
+   RESET — hər şey border-box, overflow yoxdur
+   ────────────────────────────────────────────── */
+.pkg-admin {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  font-family: "Poppins", sans-serif;
+  color: var(--text-primary, #1a1a2e);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  /* ────────── HEADER ────────── */
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    background: var(--bg-panel, #fff);
+    padding: 20px 25px;
+    border-radius: 18px;
+    border: 1px solid var(--border-subtle, #e8e8f0);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  }
+
+  &__title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 4px;
+  }
+
+  &__sub {
+    font-size: 13px;
+    color: var(--text-secondary, #666);
+    margin: 0;
+  }
+
+  &__save-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--btn-primary-bg, #1a1a2e);
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+      opacity 0.2s,
+      transform 0.2s;
+    &:hover {
+      opacity: 0.88;
+      transform: translateY(-1px);
+    }
+  }
+
+  /* ────────── KART (ümumi konteyner) ────────── */
+  &__card {
+    background: var(--bg-panel, #fff);
+    border: 1px solid var(--border-subtle, #e8e8f0);
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  }
+
+  &__section-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 18px;
+    color: var(--text-secondary, #666);
+  }
+
+  /* ────────── PAKET KUTUCUQLARI ────────── */
+  &__packages {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Masaüstü: 3 sütun */
+    gap: 15px;
+  }
+
+  &__pkg-box {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 18px;
+    border-radius: 14px;
+    background: var(--bg-input, #f7f7fb);
+    border: 1.5px dashed var(--border-strong, #d0d0e0);
+  }
+
+  &__pkg-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted, #999);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__pkg-name {
+    width: 100%;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary, #1a1a2e);
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid var(--border-subtle, #e8e8f0);
+    padding-bottom: 6px;
+    outline: none;
+    &:focus {
+      border-bottom-color: var(--text-link, #4f6ef7);
+    }
+  }
+
+  &__pkg-price {
+    width: 100%;
+    font-family: inherit;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-link, #4f6ef7);
+    background: transparent;
+    border: none;
+    outline: none;
+  }
+
+  /* ────────── XÜSUSİYYƏTLƏR SİYAHISI ────────── */
+  &__features {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  &__feat-row {
+    display: grid;
+    grid-template-columns: 2fr 1.8fr 80px; /* Masaüstü: input | toggles | silmə */
+    gap: 15px;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border-subtle, #e8e8f0);
+    transition: background 0.15s;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: var(--bg-hover, #f7f7fb);
+      border-radius: 10px;
+      padding-left: 10px;
+      padding-right: 10px;
+      margin: 0 -10px;
+    }
+  }
+
+  &__feat-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__feat-name {
+    width: 100%;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary, #1a1a2e);
+    background: var(--bg-panel, #fff);
+    border: 1px solid var(--border-subtle, #e8e8f0);
+    border-radius: 8px;
+    padding: 9px 12px;
+    outline: none;
+    &:focus {
+      border-color: var(--text-link, #4f6ef7);
+    }
+  }
+
+  &__feat-info-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  &__info-icon {
+    color: var(--text-muted, #bbb);
+    min-width: 15px;
+    font-size: 15px;
+  }
+
+  &__feat-info {
+    width: 100%;
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--text-secondary, #666);
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed var(--border-subtle, #e8e8f0);
+    padding: 3px 0;
+    outline: none;
+  }
+
+  /* Toggle qrupu — masaüstündə yan-yana */
+  &__toggles {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  &__toggle {
+    flex: 1;
+    min-height: 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: var(--bg-input, #f7f7fb);
+    border: 1.5px solid var(--border-subtle, #e8e8f0);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    &:hover {
+      transform: scale(1.04);
+    }
+
+    &--on {
+      background: rgba(25, 195, 100, 0.1);
+      border-color: rgba(25, 195, 100, 0.35);
+    }
+  }
+
+  &__toggle-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted, #aaa);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    line-height: 1;
+  }
+
+  &__toggle--on &__toggle-label {
+    color: #19c364;
+  }
+
+  &__icon-check {
+    color: #19c364;
+    font-size: 20px;
+  }
+  &__icon-cross {
+    color: var(--text-muted, #ccc);
+    font-size: 20px;
+  }
+
+  /* Silmə düyməsi */
+  &__del-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 100%;
+    height: 48px;
+    background: rgba(239, 68, 68, 0.08);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.25s;
+    span {
+      display: none;
+    } /* Masaüstündə yalnız ikonka */
+    &:hover {
+      background: #ef4444;
+      color: #fff;
+    }
+  }
+
+  /* YENİ ƏLAVƏ ET düyməsi */
+  &__add-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    background: var(--bg-input, #f7f7fb);
+    color: var(--text-primary, #1a1a2e);
+    border: 1.5px dashed var(--border-strong, #d0d0e0);
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.25s;
+    &:hover {
+      border-color: var(--text-link, #4f6ef7);
+      color: var(--text-link, #4f6ef7);
+    }
+  }
+
+  /* ══════════════════════════════════════════════
+     RESPONSİVLİK — 768px və aşağı
+     Hər şey alt-alta, grid yoxdur
+     ══════════════════════════════════════════════ */
+  @media (max-width: 768px) {
+    /* Header alt-alta */
+    &__header {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 18px;
+    }
+
+    &__save-btn {
+      justify-content: center;
+      padding: 14px;
+      font-size: 16px;
+    }
+
+    &__card {
+      padding: 18px;
+    }
+
+    /* Paketlər: grid ləğv — alt-alta */
+    &__packages {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    &__pkg-box {
+      width: 100%;
+      padding: 16px;
+
+      /* ad və qiymət inputları tam en alır, 
+         görünüşlü background/border ilə rahat dəyişilir */
+      input {
+        background: var(--bg-panel, #fff);
+        border: 1.5px solid var(--border-subtle, #e8e8f0) !important;
+        border-radius: 10px !important;
+        padding: 12px 14px !important;
+        font-size: 16px;
+      }
+    }
+
+    /* Xüsusiyyət sırası: grid ləğv — alt-alta */
+    &__feat-row {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px 0;
+      margin: 0 !important;
+
+      &:hover {
+        padding-left: 0;
+        padding-right: 0;
+        margin: 0 !important;
+      }
+    }
+
+    &__feat-name {
+      padding: 12px 14px;
+      font-size: 15px;
+    }
+
+    /* Toggle-lar: alt-alta, tam en */
+    &__toggles {
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    &__toggle {
+      flex: unset;
+      width: 100%;
+      min-height: 52px;
+      flex-direction: row; /* Sol: yazı, Sağ: ikonka */
+      justify-content: space-between;
+      padding: 0 18px;
+      border-radius: 12px;
+    }
+
+    &__toggle-label {
+      font-size: 14px;
+      letter-spacing: 0;
+      text-transform: none;
+      font-weight: 600;
+      color: var(--text-primary, #1a1a2e);
+    }
+
+    &__toggle--on &__toggle-label {
+      color: #19c364;
+    }
+
+    &__icon-check {
+      font-size: 22px;
+    }
+    &__icon-cross {
+      font-size: 22px;
+    }
+
+    /* Silmə düyməsi: tam en, mətn görünür */
+    &__del-btn {
+      width: 100%;
+      height: 50px;
+      font-size: 15px;
+      span {
+        display: inline;
+      }
+    }
+
+    /* Yeni əlavə et düyməsi: tam en */
+    &__add-btn {
+      width: 100%;
+      justify-content: center;
+      padding: 15px;
+      font-size: 16px;
+    }
+  }
+}

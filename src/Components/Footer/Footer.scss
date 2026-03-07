@@ -1,0 +1,74 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 25px;
+  background-color: var(--bg-panel); /* YENİLƏNDİ */
+  border: 1px solid var(--border-subtle); /* YENİLƏNDİ */
+  border-radius: 20px;
+    
+  color: var(--text-secondary); /* YENİLƏNDİ */
+  font-size: 14px;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Sol tərəf: Yazılar */
+.footer-left {
+  p {
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .company-link {
+    color: var(--text-link); /* YENİLƏNDİ */
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.3s ease;
+
+    &:hover {
+      color: var(--text-link-hover); /* YENİLƏNDİ */
+      text-decoration: underline;
+    }
+  }
+}
+
+/* Sağ tərəf: İkonlar */
+.footer-right {
+  display: flex;
+  gap: 15px;
+
+  .social-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    background-color: var(--bg-input); /* YENİLƏNDİ */
+    border: 1px solid var(--border-input); /* YENİLƏNDİ */
+    color: var(--text-muted); /* YENİLƏNDİ */
+    border-radius: 50%;
+    text-decoration: none;
+    font-size: 16px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: var(--bg-hover); /* YENİLƏNDİ */
+      border-color: var(--border-focus); /* YENİLƏNDİ */
+      color: var(--text-link); /* YENİLƏNDİ: Gold rəng */
+      transform: translateY(-3px); 
+       
+    }
+  }
+}
+
+/* Mobildə (Telefonlarda) yuxarıdan-aşağı diziliş */
+@media screen and (max-width: 768px) {
+  .footer-container {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+    padding: 20px 15px;
+  }
+}

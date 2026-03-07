@@ -1,0 +1,701 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+.app-admin {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  font-family: "Poppins", sans-serif;
+  color: var(--text-primary);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+
+  /* ── HEADER ──────────────────────────────────── */
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+
+  &__title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 5px;
+    color: var(--text-primary);
+  }
+
+  &__sub {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  &__counters {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  &__counter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid transparent;
+
+    &--pending {
+      background: rgba(243, 156, 18, 0.1);
+      color: #f39c12;
+      border-color: rgba(243, 156, 18, 0.25);
+    }
+    &--replied {
+      background: rgba(46, 204, 113, 0.1);
+      color: #2ecc71;
+      border-color: rgba(46, 204, 113, 0.25);
+    }
+  }
+
+  /* ── TABS ────────────────────────────────────── */
+  &__tabs {
+    display: flex;
+    gap: 10px;
+    background: var(--bg-panel);
+    padding: 6px;
+    border-radius: 16px;
+    border: 1px solid var(--border-subtle);
+    width: fit-content;
+  }
+
+  &__tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    transition: all 0.25s;
+    white-space: nowrap;
+
+    &:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    &--active {
+      background: var(--btn-primary-bg);
+      color: var(--text-on-gold);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #f39c12;
+    color: #fff;
+
+    &--grey {
+      background: var(--bg-input);
+      color: var(--text-secondary);
+    }
+  }
+
+  &__tab--active &__badge {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+  }
+
+  /* ── BOŞ VƏZİYYƏT ────────────────────────────── */
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 50px 20px;
+    color: var(--text-muted);
+    background: var(--bg-panel);
+    border-radius: 20px;
+    border: 1px dashed var(--border-strong);
+
+    svg {
+      font-size: 40px;
+    }
+    p {
+      font-size: 15px;
+      margin: 0;
+    }
+  }
+
+  /* ── LİST ────────────────────────────────────── */
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* ── ITEM ────────────────────────────────────── */
+  &__item {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    overflow: hidden;
+    transition:
+      box-shadow 0.2s,
+      border-color 0.2s;
+
+    &:hover {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
+    }
+
+    &--open {
+      border-color: var(--border-strong);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.09);
+
+      .app-admin__chevron {
+        transform: rotate(180deg);
+        color: var(--text-link, #c8a75e);
+      }
+      .app-admin__item-header {
+        border-bottom: 1px solid var(--border-subtle);
+      }
+    }
+
+    &--replied {
+      border: 1px solid rgba(46, 204, 113, 0.5);
+    }
+  }
+
+  /* ── ITEM BAŞLIQ SƏTRİ ───────────────────────── */
+  &__item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    cursor: pointer;
+    gap: 15px;
+    transition: background 0.15s;
+
+    &:hover {
+      background: var(--bg-hover);
+    }
+  }
+
+  &__item-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  &__avatar {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    border-radius: 50%;
+    background: var(--btn-primary-bg);
+    color: var(--text-on-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  &__item-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  &__item-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  &__sender {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  &__type-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+
+    &.type--complaint {
+      background: rgba(231, 76, 60, 0.12);
+      color: #e74c3c;
+    }
+    &.type--question {
+      background: rgba(52, 152, 219, 0.12);
+      color: #3498db;
+    }
+    &.type--suggestion {
+      background: rgba(46, 204, 113, 0.12);
+      color: #27ae60;
+    }
+    &.type--other {
+      background: rgba(149, 165, 166, 0.12);
+      color: #7f8c8d;
+    }
+  }
+
+  &__item-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__item-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+
+    span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--text-muted);
+      svg {
+        font-size: 12px;
+      }
+    }
+
+    /* Usercode badge */
+    &__code {
+      font-family: "Courier New", monospace !important;
+      font-weight: 700 !important;
+      font-size: 11px !important;
+      color: var(--text-secondary) !important;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      padding: 2px 9px 2px 7px;
+      border-radius: 7px;
+    }
+  }
+
+  &__item-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  &__status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+
+    &--pending {
+      background: rgba(243, 156, 18, 0.1);
+      color: #f39c12;
+    }
+    &--replied {
+      background: rgba(46, 204, 113, 0.1);
+      color: #2ecc71;
+    }
+  }
+
+  &__chevron {
+    font-size: 20px;
+    color: var(--text-secondary);
+    transition:
+      transform 0.3s,
+      color 0.3s;
+    flex-shrink: 0;
+  }
+
+  /* ── ITEM AÇILAN HİSSƏ ───────────────────────── */
+  &__item-body {
+    max-height: 0;
+    overflow: hidden;
+    transition:
+      max-height 0.4s ease,
+      padding 0.3s;
+    padding: 0 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    .app-admin__item--open & {
+      max-height: 1000px;
+      padding: 22px;
+    }
+  }
+
+  /* ── MESAJ KUTULARI ──────────────────────────── */
+  &__msg-box {
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    &--user {
+      background: var(--bg-input);
+      border: 1px solid var(--border-input);
+    }
+    &--admin {
+      background: rgba(46, 204, 113, 0.08);
+      border: 1px solid rgba(46, 204, 113, 0.25);
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+  }
+
+  &__msg-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    svg {
+      font-size: 13px;
+    }
+
+    .app-admin__msg-box--admin & {
+      color: #27ae60;
+    }
+  }
+
+  &__replied-at {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--text-muted);
+  }
+
+  /* ── CAVAB FORMASI ───────────────────────────── */
+  &__reply-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--bg-panel);
+    border: 1.5px dashed var(--border-strong);
+    border-radius: 14px;
+    padding: 18px;
+  }
+
+  &__reply-input {
+    width: 100%;
+    font-family: "Poppins", sans-serif;
+    font-size: 14px;
+    color: var(--text-primary);
+    background: var(--bg-input);
+    border: 1px solid var(--border-input);
+    border-radius: 10px;
+    padding: 12px 15px;
+    resize: none;
+    outline: none;
+    transition: border-color 0.2s;
+
+    &::placeholder {
+      color: var(--text-muted);
+    }
+    &:focus {
+      border-color: var(--border-focus);
+    }
+  }
+
+  &__reply-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+
+  &__send-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--btn-primary-bg);
+    color: var(--text-on-gold);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      opacity 0.2s,
+      transform 0.2s;
+
+    &:hover:not(:disabled) {
+      opacity: 0.88;
+      transform: translateY(-1px);
+    }
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+  }
+
+  &__spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+
+  &__reply-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* ════════════════════════════════════════════════
+     RESPONSİVLİK
+     ════════════════════════════════════════════════ */
+
+  /* ── PLANŞET (≤ 1024px) ──────────────────────── */
+  @media (max-width: 1024px) {
+    &__tabs {
+      width: 100%;
+      .app-admin__tab {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+  }
+
+  /* ── MOBİL (≤ 768px) ──────────────────────────── */
+  @media (max-width: 768px) {
+    & {
+      overflow-x: hidden;
+    }
+    gap: 16px;
+
+    &__header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    &__title {
+      font-size: 20px;
+    }
+    &__sub {
+      font-size: 12px;
+    }
+
+    &__counters {
+      width: 100%;
+      .app-admin__counter {
+        flex: 1;
+        justify-content: center;
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+    }
+
+    &__tabs {
+      width: 100%;
+      flex-direction: column;
+      gap: 6px;
+      padding: 6px;
+    }
+
+    &__tab {
+      width: 100%;
+      justify-content: center;
+      padding: 12px 16px;
+      font-size: 14px;
+    }
+
+    &__item {
+      border-radius: 16px;
+    }
+
+    &__item-header {
+      padding: 14px 16px;
+      align-items: flex-start;
+    }
+
+    &__item-left {
+      gap: 12px;
+    }
+
+    &__avatar {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      font-size: 16px;
+    }
+
+    &__item-top {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+    }
+
+    &__sender {
+      font-size: 14px;
+    }
+    &__item-title {
+      font-size: 13px;
+    }
+
+    &__item-info {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+
+      span {
+        font-size: 11px;
+      }
+
+      &__code {
+        font-size: 11px !important;
+      }
+    }
+
+    &__item-right {
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    &__status {
+      font-size: 11px;
+      padding: 4px 10px;
+    }
+
+    &__item-body {
+      .app-admin__item--open & {
+        padding: 14px 16px;
+      }
+      gap: 12px;
+    }
+
+    &__msg-box {
+      padding: 14px;
+      border-radius: 12px;
+    }
+
+    &__reply-form {
+      padding: 14px;
+    }
+
+    &__reply-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    &__send-btn {
+      width: 100%;
+      justify-content: center;
+      padding: 14px;
+      font-size: 15px;
+    }
+
+    &__reply-hint {
+      width: 100%;
+      text-align: center;
+    }
+  }
+
+  /* ── ÇOX DAR MOBİL (≤ 480px) ─────────────────── */
+  @media (max-width: 480px) {
+    &__counters {
+      flex-direction: column;
+      .app-admin__counter {
+        width: 100%;
+      }
+    }
+
+    &__title {
+      font-size: 18px;
+    }
+
+    &__item-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px;
+    }
+
+    &__item-left {
+      width: 100%;
+    }
+
+    &__item-right {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    &__chevron {
+      margin-left: auto;
+    }
+
+    &__item-body {
+      .app-admin__item--open & {
+        padding: 14px;
+      }
+    }
+  }
+}

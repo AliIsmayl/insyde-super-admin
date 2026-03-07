@@ -1,0 +1,51 @@
+.layout-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-app); /* YENİLƏNDİ: Ümumi arxa fon */
+  color: var(
+    --text-primary
+  ); /* YENİLƏNDİ: Mətnlər default olaraq açıq rəngdə olsun */
+  overflow: hidden;
+  position: relative;
+  font-family: "Poppins", sans-serif;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 2vh 2vw 2vh 0;
+  margin-left: calc(75px + 3vw);
+  transition: margin-left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.main-content.sidebar-open {
+  margin-left: calc(290px + 3vw);
+}
+
+.page-content {
+  flex: 1;
+  background-color: var(--bg-panel); /* YENİLƏNDİ: Kart və mərkəzi panel fonu */
+  border: 1px solid var(--border-subtle); /* YENİLƏNDİ: Tünd mövzu üçün incə qızılı kənar */
+  border-radius: 30px;
+  padding: 30px;
+   
+  margin-bottom: 20px;
+}
+
+/* Mobildə hər şey tam ekrandır */
+@media screen and (max-width: 768px) {
+  .main-content,
+  .main-content.sidebar-open {
+    margin-left: 0;
+    padding: 15px;
+  }
+  .page-content {
+    padding: 20px 0px 0px 0px;
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 20px;
+  }
+}
