@@ -61,18 +61,18 @@ function Sidebar({ isOpen, setIsOpen }) {
   };
 
   const menuItems = [
-    { name: "Analitika", path: "/", icon: <TbBrandGoogleAnalytics /> },
+    { name: "Analitika", path: "/analys", icon: <TbBrandGoogleAnalytics /> },
     { name: "İsdifadəçilər", path: "/users", icon: <LuUsersRound /> },
-    { name: "Paketlər", path: "/packages", icon: <PiPackage /> },
-    { name: "Paletlər", path: "/palets", icon: <IoColorPaletteOutline /> },
-
+    { name: "Kategoriyalar", path: "/categorys", icon: <TbCategory /> },
     {
       name: "Müraciətlər",
       path: "/applications",
       icon: <FaRegMessage />,
     },
+    { name: "Paletlər", path: "/palets", icon: <IoColorPaletteOutline /> },
+    { name: "Paketlər", path: "/packages", icon: <PiPackage /> },
+
     { name: "Arxivlər", path: "/archive", icon: <PiFileArchive /> },
-    { name: "Kategoriyalar", path: "/categorys", icon: <TbCategory /> },
   ];
 
   return (
