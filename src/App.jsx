@@ -1,11 +1,5 @@
 import React, { useEffect } from "react";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-  Outlet,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./Components/Layout/Layout";
 import ApplicationsPage from "./Pages/ApplicationsPage";
 import SettingPage from "./Pages/SettingPage";
@@ -16,14 +10,11 @@ import UsersPage from "./Pages/UsersPage";
 import PaletsPage from "./Pages/PaletsPage";
 import ArchivePage from "./Pages/ArchivePage";
 import CategoryPage from "./Pages/CategoryPage";
-import './App.css'
-// --- YENİ ƏLAVƏ ---
-// Bu komponent yoxlayır ki, istifadəçi login olub ya yox.
+import ScrollToTop from "./Components/ScroolToTop";
+import "./App.css";
+
 const PrivateRoutes = () => {
   const isAuthenticated = localStorage.getItem("isAuthenticated");
-
-  // Əgər login olubsa, Layout-u (və içindəki səhifələri) göstər
-  // Əgər olmayıbsa, məcburi /login səhifəsinə at
   return isAuthenticated ? <Layout /> : <Navigate to="/login" replace />;
 };
 
@@ -36,13 +27,12 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Navigate to="/analys" replace />} />
 
-        {/* LOGİN SƏHİFƏSİ */}
         <Route path="/login" element={<LoginPage />} />
 
-        {/* YALNIZ LOGİN OLANLARIN GÖRƏ BİLƏCƏYİ SƏHİFƏLƏR */}
         <Route element={<PrivateRoutes />}>
           <Route path="/analys" element={<AnalysPage />} />
           <Route path="/users" element={<UsersPage />} />
@@ -54,7 +44,6 @@ function App() {
           <Route path="/categorys" element={<CategoryPage />} />
         </Route>
 
-        {/* Yanlış link */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
