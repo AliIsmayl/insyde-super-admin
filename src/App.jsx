@@ -12,6 +12,7 @@ import ArchivePage from "./Pages/ArchivePage";
 import CategoryPage from "./Pages/CategoryPage";
 import ScrollToTop from "./Components/ScroolToTop";
 import "./App.css";
+import PaymentPage from "./Pages/PaymentPage";
 
 const PrivateRoutes = () => {
   const isAuthenticated = localStorage.getItem("isAuthenticated");
@@ -40,6 +41,7 @@ function App() {
           <Route path="/applications" element={<ApplicationsPage />} />
           <Route path="/settings" element={<SettingPage />} />
           <Route path="/packages" element={<PackagePage />} />
+          <Route path="/payment" element={<PaymentPage />} />
           <Route path="/archive" element={<ArchivePage />} />
           <Route path="/categorys" element={<CategoryPage />} />
         </Route>
