@@ -7,7 +7,6 @@ import {
   Outlet,
 } from "react-router-dom";
 import Layout from "./Components/Layout/Layout";
-import "./app.css";
 import ApplicationsPage from "./Pages/ApplicationsPage";
 import SettingPage from "./Pages/SettingPage";
 import PackagePage from "./Pages/PackagePage";
@@ -17,7 +16,7 @@ import UsersPage from "./Pages/UsersPage";
 import PaletsPage from "./Pages/PaletsPage";
 import ArchivePage from "./Pages/ArchivePage";
 import CategoryPage from "./Pages/CategoryPage";
-
+import './App.css'
 // --- YENİ ƏLAVƏ ---
 // Bu komponent yoxlayır ki, istifadəçi login olub ya yox.
 const PrivateRoutes = () => {
