@@ -17,6 +17,10 @@ import {
   FiToggleRight,
   FiX,
   FiPlus,
+  FiZap,
+  FiCopy,
+  FiCheck,
+  FiPackage,
 } from "react-icons/fi";
 import "./ApplicationsMain.scss";
 
@@ -91,8 +95,7 @@ const initialInbox = [
     usercode: "SYD-00789",
     type: "Təklif",
     title: "Yeni xüsusiyyət təklifi",
-    message:
-      "Karta video əlavə etmək imkanı olsa çox yaxşı olardı. Müştərilərə özümü daha yaxşı təqdim edə bilərdim.",
+    message: "Karta video əlavə etmək imkanı olsa çox yaxşı olardı.",
     date: "04-03-2026",
     time: "17:50",
     status: "pending",
@@ -124,30 +127,168 @@ const TYPE_COLORS = {
   Digər: "type--other",
 };
 
+const PACKAGES = ["Starter", "Pro", "Business", "Enterprise"];
+
 /* ─────────────────────────────────────────────────────────── */
 /*  HELPERS                                                     */
 /* ─────────────────────────────────────────────────────────── */
 function nowTs() {
-  const now = new Date();
-  const p = (n) => String(n).padStart(2, "0");
+  const now = new Date(),
+    p = (n) => String(n).padStart(2, "0");
   return `${p(now.getDate())}-${p(now.getMonth() + 1)}-${now.getFullYear()}, ${p(now.getHours())}:${p(now.getMinutes())}`;
 }
 function todayStr() {
-  const now = new Date();
-  const p = (n) => String(n).padStart(2, "0");
+  const now = new Date(),
+    p = (n) => String(n).padStart(2, "0");
   return `${p(now.getDate())}-${p(now.getMonth() + 1)}-${now.getFullYear()}`;
 }
 function timeStr() {
-  const now = new Date();
-  const p = (n) => String(n).padStart(2, "0");
+  const now = new Date(),
+    p = (n) => String(n).padStart(2, "0");
   return `${p(now.getHours())}:${p(now.getMinutes())}`;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/*  ACTIVATION TEMPLATE                                         */
+/* ─────────────────────────────────────────────────────────── */
+function generateTemplate(req) {
+  return `Hörmətli istifadəçi,
+
+Müraciətiniz qəbul edildi. Aşağıda giriş məlumatlarınız göndərilir:
+
+📧 E-poçt: ${req.email}
+📦 Paket: ${req.package}
+🔑 Parol: [PAROL_BURA]
+👤 User Kodu: [USERCODE_BURA]
+🔗 Giriş linki: https://panel.sizinsayt.az/login
+
+Zəhmət olmasa ilk girişdən sonra parolunuzu dəyişdirin.
+
+Hər hansı sualınız olarsa bizimlə əlaqə saxlayın.
+
+Hörmətlə,
+Admin Komandası`;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/*  ACTIVATION ITEM  (superadmin tərəfi)                       */
+/* ─────────────────────────────────────────────────────────── */
+function ActivationItem({
+  req,
+  openId,
+  onToggle,
+  onStatusChange,
+  copiedId,
+  onCopy,
+}) {
+  const isOpen = openId === req.id;
+
+  return (
+    <div
+      className={`app-admin__item activation-item ${isOpen ? "app-admin__item--open" : ""} ${req.status === "Tamamlandı" ? "activation-item--done" : ""}`}
+    >
+      <div className="app-admin__item-header" onClick={() => onToggle(req.id)}>
+        <div className="app-admin__item-left">
+          <div className="activation-item__icon">
+            <FiZap />
+          </div>
+          <div className="app-admin__item-meta">
+            <div className="app-admin__item-top">
+              <span className="app-admin__sender">{req.email}</span>
+              <span className="activation-item__pkg-badge">{req.package}</span>
+            </div>
+            <div className="app-admin__item-info">
+              <span>
+                <FiCalendar /> {req.date} · {req.time}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="app-admin__item-right">
+          <span
+            className={`app-admin__status ${req.status === "Tamamlandı" ? "app-admin__status--replied" : "app-admin__status--pending"}`}
+          >
+            {req.status === "Tamamlandı" ? (
+              <>
+                <FiCheckCircle /> Tamamlandı
+              </>
+            ) : (
+              <>
+                <FiClock /> Gözləyir
+              </>
+            )}
+          </span>
+          <FiChevronDown className="app-admin__chevron" />
+        </div>
+      </div>
+
+      <div className="app-admin__item-body">
+        {/* Şablon qutusu */}
+        <div className="activation-item__template-box">
+          <div className="activation-item__template-header">
+            <span>
+              <FiMail /> Göndəriləcək Şablon
+            </span>
+            <button
+              className={`activation-item__copy-btn ${copiedId === req.id ? "copied" : ""}`}
+              onClick={() => onCopy(req.id, generateTemplate(req))}
+            >
+              {copiedId === req.id ? (
+                <>
+                  <FiCheck /> Kopyalandı
+                </>
+              ) : (
+                <>
+                  <FiCopy /> Kopyala
+                </>
+              )}
+            </button>
+          </div>
+          <pre className="activation-item__template-text">
+            {generateTemplate(req)}
+          </pre>
+        </div>
+
+        {/* Status dəyiş */}
+        {req.status === "Gözləyir" && (
+          <div className="app-admin__reply-form">
+            <div className="app-admin__msg-label">
+              <FiSend /> Şablonu müştəriyə göndərdikdən sonra statusu tamamlandı
+              kimi işarələyin
+            </div>
+            <div className="app-admin__reply-actions">
+              <button
+                className="app-admin__send-btn activation-item__done-btn"
+                onClick={() => onStatusChange(req.id, "Tamamlandı")}
+              >
+                <FiCheckCircle /> Tamamlandı işarələ
+              </button>
+              <span className="app-admin__reply-hint">
+                Status dəyişdirildikdən sonra bu müraciət tamamlanmış görünəcək.
+              </span>
+            </div>
+          </div>
+        )}
+
+        {req.status === "Tamamlandı" && (
+          <div className="activation-item__done-banner">
+            <FiCheckCircle />
+            <span>
+              Bu aktivasiya müraciəti tamamlandı. Müştəriyə giriş məlumatları
+              göndərildi.
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 /* ─────────────────────────────────────────────────────────── */
 /*  COMPOSE MODAL                                               */
 /* ─────────────────────────────────────────────────────────── */
 function ComposeModal({ onClose, onSend }) {
-  const [mode, setMode] = useState("individual"); // "individual" | "broadcast"
+  const [mode, setMode] = useState("individual");
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
@@ -192,18 +333,16 @@ function ComposeModal({ onClose, onSend }) {
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className="compose-modal">
-        {/* Header */}
         <div className="compose-modal__header">
           <div className="compose-modal__header-left">
             <FiEdit3 />
-            <h3>Yeni Müraciət</h3>
+            <h3>Yeni Mesaj</h3>
           </div>
           <button className="compose-modal__close" onClick={onClose}>
             <FiX />
           </button>
         </div>
 
-        {/* Mode Toggle */}
         <div className="compose-modal__mode-row">
           <button
             className={`compose-modal__mode-btn ${mode === "individual" ? "active" : ""}`}
@@ -225,7 +364,6 @@ function ComposeModal({ onClose, onSend }) {
           </button>
         </div>
 
-        {/* Recipient section */}
         {mode === "individual" && (
           <div className="compose-modal__recipients">
             <label className="compose-modal__label">
@@ -287,7 +425,6 @@ function ComposeModal({ onClose, onSend }) {
           </div>
         )}
 
-        {/* Subject */}
         <div className="compose-modal__field">
           <label className="compose-modal__label">
             <FiMail /> Mövzu
@@ -300,7 +437,6 @@ function ComposeModal({ onClose, onSend }) {
           />
         </div>
 
-        {/* Body */}
         <div className="compose-modal__field">
           <label className="compose-modal__label">
             <FiMessageSquare /> Mətn
@@ -314,7 +450,6 @@ function ComposeModal({ onClose, onSend }) {
           />
         </div>
 
-        {/* Expect reply toggle */}
         <div
           className="compose-modal__toggle-row"
           onClick={() => setExpectReply((v) => !v)}
@@ -337,7 +472,6 @@ function ComposeModal({ onClose, onSend }) {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="compose-modal__footer">
           <button className="compose-modal__cancel-btn" onClick={onClose}>
             Ləğv et
@@ -357,13 +491,11 @@ function ComposeModal({ onClose, onSend }) {
 }
 
 /* ─────────────────────────────────────────────────────────── */
-/*  OUTBOX ITEM  (söhbət rejimli)                              */
+/*  OUTBOX ITEM                                                 */
 /* ─────────────────────────────────────────────────────────── */
 function OutboxItem({ msg, openId, onToggle, onSendChat }) {
   const isOpen = openId === msg.id;
 
-  // conversation = [{from:"admin"|"user", text, at, userName?}]
-  // ilk mesaj həmişə admindən gəlir
   const conversation = msg.conversation || [
     { from: "admin", text: msg.body, at: `${msg.date}, ${msg.time}` },
     ...(msg.replies || []).map((r) => ({
@@ -376,18 +508,14 @@ function OutboxItem({ msg, openId, onToggle, onSendChat }) {
 
   const adminCount = conversation.filter((m) => m.from === "admin").length;
   const userCount = conversation.filter((m) => m.from === "user").length;
-  const totalCount = conversation.length; // max 10
-
-  // Növbəti kimdən gəlməlidir?
-  // admin max 5, user max 5; növbə: son mesaja baxaraq alternativ
+  const totalCount = conversation.length;
   const lastFrom = conversation[conversation.length - 1]?.from;
   const nextTurn = lastFrom === "admin" ? "user" : "admin";
   const canReply =
     msg.expectReply &&
     totalCount < 10 &&
-    nextTurn === "admin" && // superadmin tərəfindən yazılır
+    nextTurn === "admin" &&
     adminCount < 5;
-
   const isLimitReached = totalCount >= 10;
 
   const [chatText, setChatText] = useState("");
@@ -471,9 +599,7 @@ function OutboxItem({ msg, openId, onToggle, onSendChat }) {
         </div>
       </div>
 
-      {/* Body */}
       <div className="app-admin__item-body">
-        {/* Alıcılar */}
         <div className="outbox-item__recipients-section">
           <div className="app-admin__msg-label">
             <FiUsers /> Alıcılar
@@ -491,7 +617,6 @@ function OutboxItem({ msg, openId, onToggle, onSendChat }) {
           </div>
         </div>
 
-        {/* Söhbət */}
         <div className="outbox-item__chat">
           {conversation.map((m, i) => (
             <div
@@ -521,7 +646,6 @@ function OutboxItem({ msg, openId, onToggle, onSendChat }) {
           ))}
         </div>
 
-        {/* Limit xəbərdarlığı */}
         {isLimitReached && (
           <div className="outbox-item__limit-banner">
             <FiCheckCircle />
@@ -529,7 +653,6 @@ function OutboxItem({ msg, openId, onToggle, onSendChat }) {
           </div>
         )}
 
-        {/* Cavab forması — yalnız admin növbəsindədirsə və limit keçməyibsə */}
         {msg.expectReply && !isLimitReached && (
           <div className="outbox-item__chat-form">
             {canReply ? (
@@ -594,18 +717,19 @@ function OutboxItem({ msg, openId, onToggle, onSendChat }) {
 /* ─────────────────────────────────────────────────────────── */
 export default function ApplicationsMain() {
   const [inbox, setInbox] = useState(initialInbox);
+
   const [outbox, setOutbox] = useState([
     {
       id: 101,
       mode: "broadcast",
       subject: "Sistem yeniləməsi bildirişi",
-      body: "Hörmətli istifadəçilər, 10 mart 2026 tarixində saat 02:00-06:00 arasında texniki işlər aparılacaq. Bu müddətdə sistem əlçatmaz ola bilər.",
+      body: "Hörmətli istifadəçilər, 10 mart 2026 tarixində saat 02:00-06:00 arasında texniki işlər aparılacaq.",
       recipients: ALL_USERS,
       expectReply: false,
       conversation: [
         {
           from: "admin",
-          text: "Hörmətli istifadəçilər, 10 mart 2026 tarixində saat 02:00-06:00 arasında texniki işlər aparılacaq. Bu müddətdə sistem əlçatmaz ola bilər.",
+          text: "Hörmətli istifadəçilər, 10 mart 2026 tarixində saat 02:00-06:00 arasında texniki işlər aparılacaq.",
           at: "06-03-2026, 10:00",
         },
       ],
@@ -635,26 +759,28 @@ export default function ApplicationsMain() {
       date: "06-03-2026",
       time: "12:00",
     },
-    {
-      id: 103,
-      mode: "individual",
-      subject: "Pro paket təklifi",
-      body: "Salam! Sizin üçün xüsusi Pro paket endirimi hazırladıq. Maraqlanırsınızsa əlaqə saxlayın.",
-      recipients: [ALL_USERS[1], ALL_USERS[2], ALL_USERS[4]],
-      expectReply: true,
-      conversation: [
-        {
-          from: "admin",
-          text: "Salam! Sizin üçün xüsusi Pro paket endirimi hazırladıq. Maraqlanırsınızsa əlaqə saxlayın.",
-          at: "05-03-2026, 14:00",
-        },
-      ],
-      date: "05-03-2026",
-      time: "14:00",
-    },
   ]);
 
-  const [activeTab, setActiveTab] = useState("pending"); // "pending" | "replied" | "outbox" | "returns"
+  /* ── Aktivasiya state-i ── */
+  const [activationRequests, setActivationRequests] = useState([
+    {
+      id: 201,
+      email: "test@example.com",
+      package: "Pro",
+      date: "08-03-2026",
+      time: "11:20",
+      status: "Gözləyir",
+    },
+  ]);
+  const [activationForm, setActivationForm] = useState({
+    email: "",
+    package: "Starter",
+  });
+  const [activationSent, setActivationSent] = useState(false);
+  const [copiedId, setCopiedId] = useState(null);
+  const [activationOpenId, setActivationOpenId] = useState(null);
+
+  const [activeTab, setActiveTab] = useState("pending");
   const [openId, setOpenId] = useState(null);
   const [replyTexts, setReplyTexts] = useState({});
   const [sending, setSending] = useState(null);
@@ -664,6 +790,9 @@ export default function ApplicationsMain() {
   const pendingCount = inbox.filter((a) => a.status === "pending").length;
   const repliedCount = inbox.filter((a) => a.status === "replied").length;
   const outboxCount = outbox.length;
+  const activationCount = activationRequests.filter(
+    (r) => r.status === "Gözləyir",
+  ).length;
 
   const filteredInbox = inbox.filter((a) => a.status === activeTab);
 
@@ -677,11 +806,10 @@ export default function ApplicationsMain() {
     if (!text) return;
     setSending(id);
     setTimeout(() => {
-      const ts = nowTs();
       setInbox((prev) =>
         prev.map((a) =>
           a.id === id
-            ? { ...a, status: "replied", reply: text, repliedAt: ts }
+            ? { ...a, status: "replied", reply: text, repliedAt: nowTs() }
             : a,
         ),
       );
@@ -725,6 +853,37 @@ export default function ApplicationsMain() {
     setActiveTab("outbox");
   };
 
+  /* ── Aktivasiya handlers ── */
+  const handleActivationSubmit = (e) => {
+    e.preventDefault();
+    if (!activationForm.email) return;
+    const newReq = {
+      id: Date.now(),
+      email: activationForm.email,
+      package: activationForm.package,
+      date: todayStr(),
+      time: timeStr(),
+      status: "Gözləyir",
+    };
+    setActivationRequests((prev) => [newReq, ...prev]);
+    setActivationSent(true);
+    setActivationForm({ email: "", package: "Starter" });
+    setTimeout(() => setActivationSent(false), 4000);
+  };
+
+  const handleActivationStatusChange = (id, newStatus) => {
+    setActivationRequests((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r)),
+    );
+  };
+
+  const handleCopy = (id, text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2500);
+    });
+  };
+
   const tabs = [
     {
       key: "pending",
@@ -747,6 +906,13 @@ export default function ApplicationsMain() {
       count: outboxCount,
       color: "blue",
     },
+    {
+      key: "activation",
+      icon: <FiZap />,
+      label: "Sistem Aktivasiyası",
+      count: activationCount,
+      color: "purple",
+    },
   ];
 
   return (
@@ -756,7 +922,7 @@ export default function ApplicationsMain() {
         <div>
           <h2 className="app-admin__title">Müraciətlər</h2>
           <p className="app-admin__sub">
-            Daxil olan müraciətlər, göndərilənlər və geri dönüşlər — hamısını
+            Daxil olan müraciətlər, göndərilənlər və aktivasiyalar — hamısını
             buradan idarə edin.
           </p>
         </div>
@@ -770,12 +936,18 @@ export default function ApplicationsMain() {
               <FiCheckCircle />
               <span>{repliedCount} Cavablandı</span>
             </div>
+            {activationCount > 0 && (
+              <div className="app-admin__counter app-admin__counter--activation">
+                <FiZap />
+                <span>{activationCount} Aktivasiya</span>
+              </div>
+            )}
           </div>
           <button
             className="app-admin__compose-btn"
             onClick={() => setShowCompose(true)}
           >
-            <FiPlus /> Yeni Müraciət
+            <FiPlus /> Yeni Mesaj
           </button>
         </div>
       </div>
@@ -817,9 +989,7 @@ export default function ApplicationsMain() {
             {filteredInbox.map((app) => (
               <div
                 key={app.id}
-                className={`app-admin__item
-                  ${openId === app.id ? "app-admin__item--open" : ""}
-                  ${app.status === "replied" ? "app-admin__item--replied" : ""}`}
+                className={`app-admin__item ${openId === app.id ? "app-admin__item--open" : ""} ${app.status === "replied" ? "app-admin__item--replied" : ""}`}
               >
                 <div
                   className="app-admin__item-header"
@@ -952,6 +1122,115 @@ export default function ApplicationsMain() {
               />
             ))}
           </>
+        )}
+
+        {/* ACTIVATION TAB */}
+        {activeTab === "activation" && (
+          <div className="activation-section">
+            {/* SOL: Yeni aktivasiya formu */}
+            <div className="app-admin__item activation-form-card">
+              <div className="activation-form-card__header">
+                <div className="activation-form-card__icon">
+                  <FiZap />
+                </div>
+                <div>
+                  <h3>Yeni Sistem Aktivasiyası</h3>
+                  <p>Müştərinin e-poçtunu və seçdiyi paketi daxil edin.</p>
+                </div>
+              </div>
+
+              {activationSent && (
+                <div className="activation-form-card__success">
+                  <FiCheck /> Müraciət uğurla göndərildi! Superadmin bildiriş
+                  aldı.
+                </div>
+              )}
+
+              <form
+                onSubmit={handleActivationSubmit}
+                className="activation-form-card__form"
+              >
+                <div className="activation-form-card__field">
+                  <label>
+                    <FiMail /> Müştərinin E-poçtu
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="musteri@example.com"
+                    value={activationForm.email}
+                    onChange={(e) =>
+                      setActivationForm({
+                        ...activationForm,
+                        email: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="activation-form-card__field">
+                  <label>
+                    <FiPackage /> Seçilmiş Paket
+                  </label>
+                  <div className="activation-form-card__packages">
+                    {PACKAGES.map((pkg) => (
+                      <button
+                        key={pkg}
+                        type="button"
+                        className={`activation-form-card__pkg-btn ${activationForm.package === pkg ? "active" : ""}`}
+                        onClick={() =>
+                          setActivationForm({ ...activationForm, package: pkg })
+                        }
+                      >
+                        {pkg}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="app-admin__send-btn activation-form-card__submit"
+                >
+                  <FiSend /> Müraciət Göndər
+                </button>
+              </form>
+            </div>
+
+            {/* SAĞ: Gələn aktivasiya müraciətləri */}
+            <div className="activation-requests">
+              <div className="activation-requests__header">
+                <h3>
+                  <FiInbox /> Gözləyən Aktivasiyalar
+                </h3>
+                <p>
+                  Şablonu kopyalayıb müştərinin e-poçtuna göndərin, sonra
+                  statusu dəyişin.
+                </p>
+              </div>
+
+              {activationRequests.length === 0 && (
+                <div className="app-admin__empty">
+                  <FiZap />
+                  <p>Hələ aktivasiya müraciəti yoxdur.</p>
+                </div>
+              )}
+
+              {activationRequests.map((req) => (
+                <ActivationItem
+                  key={req.id}
+                  req={req}
+                  openId={activationOpenId}
+                  onToggle={(id) =>
+                    setActivationOpenId(activationOpenId === id ? null : id)
+                  }
+                  onStatusChange={handleActivationStatusChange}
+                  copiedId={copiedId}
+                  onCopy={handleCopy}
+                />
+              ))}
+            </div>
+          </div>
         )}
       </div>
 
