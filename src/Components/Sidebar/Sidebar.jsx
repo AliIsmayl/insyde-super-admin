@@ -11,23 +11,20 @@ import { LuUsersRound } from "react-icons/lu";
 import { IoColorPaletteOutline } from "react-icons/io5";
 import { PiFileArchive } from "react-icons/pi";
 import { TbCategory } from "react-icons/tb";
+import { MdOutlinePayments } from "react-icons/md";
 
 function Sidebar({ isOpen, setIsOpen }) {
   const [openMenus, setOpenMenus] = useState({});
   const sidebarRef = useRef(null);
 
-  // Ekran ölçüsünü yoxlamaq üçün state (Masaüstü və ya Mobil)
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Kənara klikləyəndə bağlansın (Xüsusilə mobil üçün faydalıdır)
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -42,15 +39,13 @@ function Sidebar({ isOpen, setIsOpen }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, setIsOpen]);
 
-  // Hover funksiyaları (Yalnız masaüstü üçün)
   const handleMouseEnter = () => {
     if (!isMobile) setIsOpen(true);
   };
-
   const handleMouseLeave = () => {
     if (!isMobile) {
       setIsOpen(false);
-      setOpenMenus({}); // Bağlananda alt menyuları da bağlasın
+      setOpenMenus({});
     }
   };
 
@@ -62,16 +57,12 @@ function Sidebar({ isOpen, setIsOpen }) {
 
   const menuItems = [
     { name: "Analitika", path: "/analys", icon: <TbBrandGoogleAnalytics /> },
-    { name: "İsdifadəçilər", path: "/users", icon: <LuUsersRound /> },
+    { name: "İstifadəçilər", path: "/users", icon: <LuUsersRound /> },
     { name: "Kategoriyalar", path: "/categorys", icon: <TbCategory /> },
-    {
-      name: "Müraciətlər",
-      path: "/applications",
-      icon: <FaRegMessage />,
-    },
+    { name: "Ödənişlər", path: "/payment", icon: <MdOutlinePayments /> },
+    { name: "Müraciətlər", path: "/applications", icon: <FaRegMessage /> },
     { name: "Paletlər", path: "/palets", icon: <IoColorPaletteOutline /> },
     { name: "Paketlər", path: "/packages", icon: <PiPackage /> },
-
     { name: "Arxivlər", path: "/archive", icon: <PiFileArchive /> },
   ];
 
@@ -88,13 +79,12 @@ function Sidebar({ isOpen, setIsOpen }) {
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        {/* LOGO HİSSƏSİ (DİNAMİK) */}
+        {/* LOGO */}
         <div className="sidebar-logo">
           <div className="logo-text-container">
             <span className="logo-small">insyde</span>
             <span className="logo-large">INSYDE</span>
           </div>
-
           <button
             className="mobile-close-btn"
             onClick={(e) => {
@@ -106,7 +96,7 @@ function Sidebar({ isOpen, setIsOpen }) {
           </button>
         </div>
 
-        {/* MENYULAR */}
+        {/* MENYULAR — scroll bölgəsi */}
         <div className="sidebar-menu">
           {menuItems.map((item, index) => (
             <div key={index} className="menu-group">
@@ -154,7 +144,7 @@ function Sidebar({ isOpen, setIsOpen }) {
           ))}
         </div>
 
-        {/* ALT HİSSƏ (FOOTER) */}
+        {/* FOOTER */}
         <div className="sidebar-footer">
           <NavLink
             to="/settings"
@@ -184,7 +174,7 @@ function Sidebar({ isOpen, setIsOpen }) {
         </div>
       </div>
 
-      {/* MOBİLDƏ GÖRÜNƏN HAMBURGER DÜYMƏSİ */}
+      {/* MOBİL HAMBURGER */}
       <button className="mobile-hamburger" onClick={() => setIsOpen(true)}>
         <FiMenu />
       </button>
