@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiArchive,
   FiUser,
@@ -9,16 +9,142 @@ import {
   FiMail,
   FiPhone,
   FiSearch,
-  FiAlertTriangle,
   FiChevronDown,
   FiClock,
   FiHash,
   FiMessageCircle,
   FiCornerDownRight,
+  FiCheckCircle,
+  FiAlertCircle,
+  FiSlash,
+  FiX,
 } from "react-icons/fi";
 import "./ArchiveMain.scss";
 
-// ── Nümunə məlumatlar ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// POPUP
+// ─────────────────────────────────────────────
+const POPUP_CONFIG = {
+  success: {
+    Icon: FiCheckCircle,
+    confirmClass: "popup__btn--success",
+    defaultConfirm: "Əla",
+    cancelable: false,
+  },
+  delete: {
+    Icon: FiTrash2,
+    confirmClass: "popup__btn--delete",
+    defaultConfirm: "Sil",
+    cancelable: true,
+  },
+  error: {
+    Icon: FiAlertCircle,
+    confirmClass: "popup__btn--error",
+    defaultConfirm: "Anladım",
+    cancelable: false,
+  },
+  block: {
+    Icon: FiSlash,
+    confirmClass: "popup__btn--block",
+    defaultConfirm: "Blokla",
+    cancelable: true,
+  },
+  update: {
+    Icon: FiRefreshCw,
+    confirmClass: "popup__btn--update",
+    defaultConfirm: "Yenilə",
+    cancelable: true,
+  },
+};
+
+function Popup({
+  isOpen = false,
+  type = "success",
+  title = "",
+  message = "",
+  confirmText,
+  cancelText = "Ləğv et",
+  onConfirm,
+  onCancel,
+}) {
+  const cfg = POPUP_CONFIG[type] ?? POPUP_CONFIG.success;
+  const finalConfirmText = confirmText ?? cfg.defaultConfirm;
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e) => {
+      if (e.key === "Escape") onCancel?.();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isOpen, onCancel]);
+
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div
+        className="popup__overlay"
+        onClick={cfg.cancelable ? onCancel : undefined}
+        aria-hidden="true"
+      />
+      <div
+        className={`popup popup--${type}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="popup-title"
+      >
+        {cfg.cancelable && (
+          <button
+            className="popup__close"
+            onClick={onCancel}
+            aria-label="Bağla"
+          >
+            <FiX />
+          </button>
+        )}
+        <div className="popup__icon-wrap">
+          <cfg.Icon className="popup__icon" />
+        </div>
+        <div className="popup__content">
+          {title && (
+            <h3 id="popup-title" className="popup__title">
+              {title}
+            </h3>
+          )}
+          {message && <p className="popup__message">{message}</p>}
+        </div>
+        <div className="popup__actions">
+          {cfg.cancelable && (
+            <button
+              className="popup__btn popup__btn--cancel"
+              onClick={onCancel}
+            >
+              {cancelText}
+            </button>
+          )}
+          <button
+            className={`popup__btn ${cfg.confirmClass}`}
+            onClick={() => onConfirm?.()}
+          >
+            {finalConfirmText}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────
 const initialUsers = [
   {
     id: 1,
@@ -150,15 +276,20 @@ const PLAN_CLS = {
   Premium: "plan--premium",
 };
 
+// ─────────────────────────────────────────────
+// MAIN
+// ─────────────────────────────────────────────
 export default function ArchiveMain() {
   const [users, setUsers] = useState(initialUsers);
   const [messages] = useState(initialMessages);
   const [userSearch, setUserSearch] = useState("");
   const [msgSearch, setMsgSearch] = useState("");
-  const [restoreId, setRestoreId] = useState(null);
-  const [deleteId, setDeleteId] = useState(null);
   const [openMsgId, setOpenMsgId] = useState(null);
   const [activeTab, setActiveTab] = useState("users");
+
+  // Popup state
+  const [popup, setPopup] = useState({ isOpen: false, type: "success" });
+  const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
 
   const filteredUsers = users.filter(
     (u) =>
@@ -173,20 +304,57 @@ export default function ArchiveMain() {
       m.title.toLowerCase().includes(msgSearch.toLowerCase()),
   );
 
-  const doRestore = () => {
-    setUsers((prev) => prev.filter((u) => u.id !== restoreId));
-    setRestoreId(null);
+  // ── Bərpa et — update popup ilə təsdiq, sonra success ──
+  const handleRestore = (user) => {
+    setPopup({
+      isOpen: true,
+      type: "update",
+      title: "İstifadəçini bərpa etmək istəyirsiniz?",
+      message: `"${user.name}" (${user.usercode}) hesabı yenidən aktiv ediləcək.`,
+      confirmText: "Bərpa et",
+      onConfirm: () => {
+        setUsers((prev) => prev.filter((u) => u.id !== user.id));
+        setPopup({
+          isOpen: true,
+          type: "success",
+          title: "Hesab bərpa edildi!",
+          message: `"${user.name}" uğurla sistemə qaytarıldı.`,
+          confirmText: "Əla",
+          onConfirm: closePopup,
+        });
+      },
+    });
   };
 
-  const doDelete = () => {
-    setUsers((prev) => prev.filter((u) => u.id !== deleteId));
-    setDeleteId(null);
+  // ── Tam sil — delete popup ilə təsdiq ──
+  const handleDelete = (user) => {
+    setPopup({
+      isOpen: true,
+      type: "delete",
+      title: "Hesabı tamamilə silmək istəyirsiniz?",
+      message: `"${user.name}" (${user.usercode}) hesabı birdəfəlik silinəcək. Bu əməliyyat geri alına bilməz.`,
+      confirmText: "Tam Sil",
+      onConfirm: () => {
+        setUsers((prev) => prev.filter((u) => u.id !== user.id));
+        closePopup();
+      },
+    });
   };
-
-  const confirmUser = users.find((u) => u.id === (restoreId || deleteId));
 
   return (
     <div className="arch">
+      {/* POPUP */}
+      <Popup
+        isOpen={popup.isOpen}
+        type={popup.type}
+        title={popup.title}
+        message={popup.message}
+        confirmText={popup.confirmText}
+        cancelText="Ləğv et"
+        onConfirm={popup.onConfirm}
+        onCancel={closePopup}
+      />
+
       {/* ══ HEADER ══════════════════════════════════════════════════ */}
       <div className="arch__header">
         <div>
@@ -255,7 +423,6 @@ export default function ArchiveMain() {
                 <div className="arch__avatar">{user.name.charAt(0)}</div>
 
                 <div className="arch__user-info">
-                  {/* Üst sıra: ad + paket + usercode */}
                   <div className="arch__user-top">
                     <span className="arch__user-name">{user.name}</span>
                     <span
@@ -268,7 +435,6 @@ export default function ArchiveMain() {
                     </span>
                   </div>
 
-                  {/* Alt sıra: email + telefon + silinmə tarixi */}
                   <div className="arch__user-details">
                     <span>
                       <FiMail /> {user.email}
@@ -285,14 +451,14 @@ export default function ArchiveMain() {
                 <div className="arch__user-actions">
                   <button
                     className="arch__btn arch__btn--restore"
-                    onClick={() => setRestoreId(user.id)}
+                    onClick={() => handleRestore(user)}
                   >
                     <FiRefreshCw />
                     <span>Bərpa et</span>
                   </button>
                   <button
                     className="arch__btn arch__btn--delete"
-                    onClick={() => setDeleteId(user.id)}
+                    onClick={() => handleDelete(user)}
                   >
                     <FiTrash2 />
                     <span>Sil</span>
@@ -335,7 +501,6 @@ export default function ArchiveMain() {
                 key={msg.id}
                 className={`arch__msg-item ${openMsgId === msg.id ? "arch__msg-item--open" : ""}`}
               >
-                {/* Başlıq sətri */}
                 <div
                   className="arch__msg-header"
                   onClick={() =>
@@ -354,7 +519,6 @@ export default function ArchiveMain() {
                         >
                           {msg.type}
                         </span>
-                        {/* Cavab statusu */}
                         {msg.reply ? (
                           <span className="arch__reply-status arch__reply-status--done">
                             Cavablandı
@@ -379,10 +543,8 @@ export default function ArchiveMain() {
                   <FiChevronDown className="arch__msg-chevron" />
                 </div>
 
-                {/* Açılan body: mesaj + cavab */}
                 <div className="arch__msg-body">
                   <div className="arch__msg-content">
-                    {/* İstifadəçi mesajı */}
                     <div className="arch__msg-box arch__msg-box--user">
                       <div className="arch__msg-box-label">
                         <FiMessageCircle /> İstifadəçi mesajı
@@ -390,7 +552,6 @@ export default function ArchiveMain() {
                       <p>{msg.content}</p>
                     </div>
 
-                    {/* Admin cavabı */}
                     {msg.reply ? (
                       <div className="arch__msg-box arch__msg-box--admin">
                         <div className="arch__msg-box-label">
@@ -415,75 +576,6 @@ export default function ArchiveMain() {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      )}
-
-      {/* ══ RESTORE MODALI ══════════════════════════════════════════ */}
-      {restoreId && (
-        <div
-          className="arch__modal-backdrop"
-          onClick={() => setRestoreId(null)}
-        >
-          <div className="arch__modal" onClick={(e) => e.stopPropagation()}>
-            <div className="arch__modal-icon arch__modal-icon--restore">
-              <FiRefreshCw />
-            </div>
-            <h4>İstifadəçini bərpa etmək istəyirsiniz?</h4>
-            <p>
-              <strong>{confirmUser?.name}</strong>{" "}
-              <span className="arch__modal-code">
-                ({confirmUser?.usercode})
-              </span>{" "}
-              hesabı yenidən aktiv ediləcək.
-            </p>
-            <div className="arch__modal-actions">
-              <button
-                className="arch__btn arch__btn--ghost"
-                onClick={() => setRestoreId(null)}
-              >
-                Ləğv et
-              </button>
-              <button
-                className="arch__btn arch__btn--restore"
-                onClick={doRestore}
-              >
-                <FiRefreshCw /> Bərpa et
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ══ SİLMƏ MODALI ════════════════════════════════════════════ */}
-      {deleteId && (
-        <div className="arch__modal-backdrop" onClick={() => setDeleteId(null)}>
-          <div className="arch__modal" onClick={(e) => e.stopPropagation()}>
-            <div className="arch__modal-icon arch__modal-icon--delete">
-              <FiAlertTriangle />
-            </div>
-            <h4>Hesabı tamamilə silmək istəyirsiniz?</h4>
-            <p>
-              <strong>{confirmUser?.name}</strong>{" "}
-              <span className="arch__modal-code">
-                ({confirmUser?.usercode})
-              </span>{" "}
-              hesabı birdəfəlik silinəcək. Bu əməliyyat geri alına bilməz.
-            </p>
-            <div className="arch__modal-actions">
-              <button
-                className="arch__btn arch__btn--ghost"
-                onClick={() => setDeleteId(null)}
-              >
-                Ləğv et
-              </button>
-              <button
-                className="arch__btn arch__btn--delete"
-                onClick={doDelete}
-              >
-                <FiTrash2 /> Tam Sil
-              </button>
-            </div>
           </div>
         </div>
       )}

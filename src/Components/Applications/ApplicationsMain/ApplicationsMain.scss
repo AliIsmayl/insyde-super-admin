@@ -632,7 +632,6 @@
       background: var(--btn-primary-bg);
       color: var(--text-on-gold);
       border-color: transparent;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
   }
 
@@ -1017,7 +1016,7 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(6px);
-  z-index: 9000;
+  z-index: 4000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1046,6 +1045,9 @@
   gap: 0;
   animation: slideUp 0.25s ease;
   scrollbar-width: thin;
+  overflow-y: auto;        /* və ya overflow-x: auto */
+  scrollbar-width: none;   /* Firefox */
+  -ms-overflow-style: none;
   @keyframes slideUp {
     from {
       opacity: 0;
@@ -1180,6 +1182,9 @@
     padding: 6px;
     background: var(--bg-input);
     scrollbar-width: thin;
+    overflow-y: auto;        /* və ya overflow-x: auto */
+  scrollbar-width: none;   /* Firefox */
+  -ms-overflow-style: none;
   }
   &__user-item {
     display: flex;

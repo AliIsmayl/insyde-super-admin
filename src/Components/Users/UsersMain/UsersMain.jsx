@@ -21,8 +21,8 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import "./UsersMain.scss";
+import Popup from "../../Popup/Popup";
 
-// İkonları dinamik çağırmaq üçün
 const iconMap = {
   instagram: <FaInstagram />,
   whatsapp: <FaWhatsapp />,
@@ -31,7 +31,6 @@ const iconMap = {
   linkedin: <FaLinkedin />,
 };
 
-// MOCK DATALAR (Paginasiyanı test etmək üçün çoxaldılıb)
 const initialUsers = [
   {
     id: 1,
@@ -156,7 +155,6 @@ const initialUsers = [
   },
 ];
 
-// YENİ İSTİFADƏÇİ ŞABLONU
 const getEmptyUser = () => ({
   id: null,
   userCode: "SYD" + Math.floor(1000 + Math.random() * 9000),
@@ -177,99 +175,148 @@ function UsersMain() {
   const [users, setUsers] = useState(initialUsers);
   const [search, setSearch] = useState("");
   const [activeUser, setActiveUser] = useState(initialUsers[0]);
-
-  // Redaktə oluna bilən sahələr
-  const [editCode, setEditCode] = useState(activeUser.userCode);
-  const [editStatus, setEditStatus] = useState(activeUser.status);
-
-  // === PAGİNASİYA STATE-LƏRİ ===
+  const [editCode, setEditCode] = useState(initialUsers[0].userCode);
+  const [editStatus, setEditStatus] = useState(initialUsers[0].status);
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 4; // Hər səhifədə göstəriləcək kart sayı
+  const usersPerPage = 4;
 
-  // activeUser dəyişəndə inputları yeniləyirik
+  /* ── Popup state ── */
+  const [popup, setPopup] = useState({ isOpen: false });
+  const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
+
+  /* Köməkçi: popup açmaq */
+  const openPopup = (cfg) => setPopup({ isOpen: true, ...cfg });
+
   useEffect(() => {
     setEditCode(activeUser.userCode || "");
     setEditStatus(activeUser.status || "active");
   }, [activeUser]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
   const isCreating = activeUser.id === null;
 
-  // Axtarışdan keçən istifadəçilər
   const filteredUsers = users.filter(
     (u) =>
       u.name.toLowerCase().includes(search.toLowerCase()) ||
       u.userCode.toLowerCase().includes(search.toLowerCase()),
   );
 
-  // Axtarış edildikdə səhifəni 1-ə qaytarmaq
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search]);
-
-  // === PAGİNASİYA HESABLAMALARI ===
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = (page) => setCurrentPage(page);
 
-  // Yaratma rejiminə keçid
-  const handleAddNewClick = () => {
-    setActiveUser(getEmptyUser());
-  };
-
-  // Yaratmaqdan imtina etmək
-  const handleCancelCreate = () => {
-    if (users.length > 0) setActiveUser(users[0]);
-  };
-
-  // Yeni istifadəçi yaratmaq
+  /* ── Yeni istifadəçi yaratmaq ── */
   const handleCreateNewUser = () => {
-    if (!activeUser.userCode || !activeUser.password) {
-      alert("Zəhmət olmasa User Code və Şifrəni daxil edin!");
-      return;
-    }
     const newUser = { ...activeUser, id: Date.now() };
     setUsers([newUser, ...users]);
     setActiveUser(newUser);
-    alert("Yeni istifadəçi uğurla yaradıldı!");
   };
 
-  // Mövcud istifadəçini redaktə edib saxlamaq
+  /* ── Mövcud istifadəçini yadda saxlamaq ── */
   const handleSaveExisting = () => {
-    const updatedUsers = users.map((u) =>
+    const updated = users.map((u) =>
       u.id === activeUser.id
         ? { ...u, userCode: editCode, status: editStatus }
         : u,
     );
-    setUsers(updatedUsers);
+    setUsers(updated);
     setActiveUser({ ...activeUser, userCode: editCode, status: editStatus });
-    alert("Dəyişikliklər uğurla yadda saxlanıldı!");
   };
 
-  const toggleStatus = () => {
+  const toggleStatus = () =>
     setEditStatus(editStatus === "active" ? "blocked" : "active");
-  };
 
-  // Top platformanı tapmaq
   const topPlatform =
-    activeUser.platforms && activeUser.platforms.length > 0
-      ? activeUser.platforms.reduce((prev, current) =>
-          prev.views > current.views ? prev : current,
+    activeUser.platforms?.length > 0
+      ? activeUser.platforms.reduce((prev, cur) =>
+          prev.views > cur.views ? prev : cur,
         )
       : null;
 
+  /* ─────────────────── POPUP TETİKLƏYİCİLƏR ─────────────────── */
+
+  /* 1. Yeni istifadəçi yarat — validasiya + success popup */
+  const handleCreateClick = () => {
+    if (!activeUser.userCode || !activeUser.password) {
+      openPopup({
+        type: "error",
+        title: "Məlumatlar çatışmır",
+        message: "Zəhmət olmasa User Code və Şifrəni mütləq daxil edin.",
+        confirmText: "Anladım",
+        onConfirm: null,
+      });
+      return;
+    }
+    openPopup({
+      type: "success",
+      title: "Uğurla yaradıldı!",
+      message: `"${activeUser.userCode}" kodu ilə yeni istifadəçi sistemə əlavə edildi.`,
+      confirmText: "Əla",
+      onConfirm: handleCreateNewUser,
+    });
+  };
+
+  /* 2. Dəyişiklikləri saxla — update popup */
+  const handleSaveClick = () => {
+    openPopup({
+      type: "update",
+      title: "Dəyişikliklər saxlanılsın?",
+      message: `"${activeUser.name}" istifadəçisinin məlumatları yenilənəcək.`,
+      confirmText: "Yenilə",
+      onConfirm: handleSaveExisting,
+    });
+  };
+
+  /* 3. Blokla / Aktivləşdir */
+  const handleBlockClick = () => {
+    const willBlock = editStatus === "active";
+    openPopup({
+      type: willBlock ? "block" : "success",
+      title: willBlock
+        ? "Hesabı bloklamaq istəyirsiniz?"
+        : "Hesabı aktivləşdirmək istəyirsiniz?",
+      message: willBlock
+        ? `"${activeUser.name}" artıq sistemə daxil ola bilməyəcək.`
+        : `"${activeUser.name}" yenidən sistemi istifadə edə biləcək.`,
+      confirmText: willBlock ? "Blokla" : "Aktivləşdir",
+      onConfirm: toggleStatus,
+    });
+  };
+
   return (
     <div className="users-main-modern-split">
-      {/* ================= SOL TƏRƏF (İstifadəçi Siyahısı) ================= */}
+      {/* ── Popup ── */}
+      <Popup
+        isOpen={popup.isOpen}
+        type={popup.type}
+        title={popup.title}
+        message={popup.message}
+        confirmText={popup.confirmText}
+        cancelText="Ləğv et"
+        onConfirm={() => {
+          popup.onConfirm?.();
+          closePopup();
+        }}
+        onCancel={closePopup}
+      />
+
+      {/* ═══════════════ SOL: İstifadəçi Siyahısı ═══════════════ */}
       <div className="users-list-section">
         <div className="list-header">
           <div className="title-row">
             <h2>İstifadəçilər</h2>
             <div className="title-actions">
               <span className="total-count">{users.length} hesab</span>
-              <button className="add-btn" onClick={handleAddNewClick}>
+              <button
+                className="add-btn"
+                onClick={() => setActiveUser(getEmptyUser())}
+              >
                 <FaPlus /> Yeni
               </button>
             </div>
@@ -301,7 +348,7 @@ function UsersMain() {
                   />
                   <div
                     className={`status-dot ${user.status === "active" ? "green" : "red"}`}
-                  ></div>
+                  />
                 </div>
                 <div className="card-body">
                   <h4>{user.name}</h4>
@@ -322,7 +369,6 @@ function UsersMain() {
           </div>
         </div>
 
-        {/* === PAGİNASİYA KONTROLLARI === */}
         {totalPages > 1 && (
           <div className="pagination">
             <button
@@ -333,17 +379,15 @@ function UsersMain() {
               <FaChevronLeft />
             </button>
             <div className="page-numbers">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (number) => (
-                  <button
-                    key={number}
-                    className={`page-num-btn ${currentPage === number ? "active-page" : ""}`}
-                    onClick={() => paginate(number)}
-                  >
-                    {number}
-                  </button>
-                ),
-              )}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                <button
+                  key={n}
+                  className={`page-num-btn ${currentPage === n ? "active-page" : ""}`}
+                  onClick={() => paginate(n)}
+                >
+                  {n}
+                </button>
+              ))}
             </div>
             <button
               className="page-nav-btn"
@@ -356,7 +400,7 @@ function UsersMain() {
         )}
       </div>
 
-      {/* ================= SAĞ TƏRƏF (Profil və ya Yaratma Paneli) ================= */}
+      {/* ═══════════════ SAĞ: Profil / Yaratma Paneli ═══════════════ */}
       <div className="info-section">
         <div className="top-header">
           <div>
@@ -383,7 +427,7 @@ function UsersMain() {
         </div>
 
         {isCreating ? (
-          /* ================= YENİ İSTİFADƏÇİ YARATMA FORMU ================= */
+          /* ─── YENİ İSTİFADƏÇİ FORMU ─── */
           <div className="modern-card profile-card create-mode-card">
             <div className="create-content">
               <div className="create-icon">
@@ -394,7 +438,6 @@ function UsersMain() {
                 Sadəcə unikal User Code və ilkin şifrə tələb olunur. Digər
                 detalları istifadəçi özü dolduracaq.
               </p>
-
               <div className="create-inputs">
                 <div className="input-box">
                   <label>
@@ -426,20 +469,20 @@ function UsersMain() {
             <div className="admin-actions-footer">
               <button
                 className="action-btn cancel-btn"
-                onClick={handleCancelCreate}
+                onClick={() => users.length > 0 && setActiveUser(users[0])}
               >
                 <FaTimes /> Ləğv Et
               </button>
               <button
                 className="action-btn save-btn"
-                onClick={handleCreateNewUser}
+                onClick={handleCreateClick}
               >
                 <FaSave /> Yarat və Yadda Saxla
               </button>
             </div>
           </div>
         ) : (
-          /* ================= MÖVCUD PROFİLƏ BAXIŞ VƏ REDAKTƏ ================= */
+          /* ─── MÖVCUD PROFİL ─── */
           <div className="modern-card profile-card">
             <div className="profile-header-main">
               <div className="ph-left">
@@ -553,9 +596,10 @@ function UsersMain() {
             </div>
 
             <div className="admin-actions-footer">
+              {/* Blokla / Aktivləşdir — indi popup ilə */}
               <button
                 className={`action-btn ${editStatus === "active" ? "block-btn" : "unblock-btn"}`}
-                onClick={toggleStatus}
+                onClick={handleBlockClick}
               >
                 {editStatus === "active" ? (
                   <>
@@ -567,10 +611,9 @@ function UsersMain() {
                   </>
                 )}
               </button>
-              <button
-                className="action-btn save-btn"
-                onClick={handleSaveExisting}
-              >
+
+              {/* Yadda saxla — indi update popup ilə */}
+              <button className="action-btn save-btn" onClick={handleSaveClick}>
                 <FaSave /> Dəyişiklikləri Saxla
               </button>
             </div>

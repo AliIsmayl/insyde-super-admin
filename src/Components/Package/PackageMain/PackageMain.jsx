@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiCheck,
   FiX,
@@ -7,10 +7,137 @@ import {
   FiPlus,
   FiTrash2,
   FiZap,
+  FiCheckCircle,
+  FiAlertCircle,
+  FiSlash,
+  FiRefreshCw,
 } from "react-icons/fi";
 import "./PackageMain.scss";
 
-// hasMinProfiles: yalnız biznes paketdə minimum profil sayı tənzimlənir
+// ─────────────────────────────────────────────
+// POPUP
+// ─────────────────────────────────────────────
+const POPUP_CONFIG = {
+  success: {
+    Icon: FiCheckCircle,
+    confirmClass: "popup__btn--success",
+    defaultConfirm: "Əla",
+    cancelable: false,
+  },
+  delete: {
+    Icon: FiTrash2,
+    confirmClass: "popup__btn--delete",
+    defaultConfirm: "Sil",
+    cancelable: true,
+  },
+  error: {
+    Icon: FiAlertCircle,
+    confirmClass: "popup__btn--error",
+    defaultConfirm: "Anladım",
+    cancelable: false,
+  },
+  block: {
+    Icon: FiSlash,
+    confirmClass: "popup__btn--block",
+    defaultConfirm: "Blokla",
+    cancelable: true,
+  },
+  update: {
+    Icon: FiRefreshCw,
+    confirmClass: "popup__btn--update",
+    defaultConfirm: "Yenilə",
+    cancelable: true,
+  },
+};
+
+function Popup({
+  isOpen = false,
+  type = "success",
+  title = "",
+  message = "",
+  confirmText,
+  cancelText = "Ləğv et",
+  onConfirm,
+  onCancel,
+}) {
+  const cfg = POPUP_CONFIG[type] ?? POPUP_CONFIG.success;
+  const finalConfirmText = confirmText ?? cfg.defaultConfirm;
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e) => {
+      if (e.key === "Escape") onCancel?.();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isOpen, onCancel]);
+
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div
+        className="popup__overlay"
+        onClick={cfg.cancelable ? onCancel : undefined}
+        aria-hidden="true"
+      />
+      <div
+        className={`popup popup--${type}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="popup-title"
+      >
+        {cfg.cancelable && (
+          <button
+            className="popup__close"
+            onClick={onCancel}
+            aria-label="Bağla"
+          >
+            <FiX />
+          </button>
+        )}
+        <div className="popup__icon-wrap">
+          <cfg.Icon className="popup__icon" />
+        </div>
+        <div className="popup__content">
+          {title && (
+            <h3 id="popup-title" className="popup__title">
+              {title}
+            </h3>
+          )}
+          {message && <p className="popup__message">{message}</p>}
+        </div>
+        <div className="popup__actions">
+          {cfg.cancelable && (
+            <button
+              className="popup__btn popup__btn--cancel"
+              onClick={onCancel}
+            >
+              {cancelText}
+            </button>
+          )}
+          <button
+            className={`popup__btn ${cfg.confirmClass}`}
+            onClick={() => onConfirm?.()}
+          >
+            {finalConfirmText}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────
 const initialPackages = {
   basic: {
     name: "Sadə",
@@ -124,26 +251,49 @@ const PKG_KEYS = [
   { key: "biznes", label: "Biznes", highlight: true },
 ];
 
+// ─────────────────────────────────────────────
+// MAIN
+// ─────────────────────────────────────────────
 export default function PackageMain() {
   const [packages, setPackages] = useState(initialPackages);
   const [features, setFeatures] = useState(initialFeatures);
 
-  const handlePkgChange = (pkgKey, field, value) =>
-    setPackages((p) => ({
-      ...p,
-      [pkgKey]: { ...p[pkgKey], [field]: value },
-    }));
+  // Popup state
+  const [popup, setPopup] = useState({ isOpen: false, type: "success" });
+  const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
 
+  // ── Paket dəyişikliyi ──
+  const handlePkgChange = (pkgKey, field, value) =>
+    setPackages((p) => ({ ...p, [pkgKey]: { ...p[pkgKey], [field]: value } }));
+
+  // ── Xüsusiyyət mətn ──
   const handleFeatText = (id, field, value) =>
     setFeatures((f) =>
       f.map((x) => (x.id === id ? { ...x, [field]: value } : x)),
     );
 
-  const toggleFeat = (id, pkgKey) =>
-    setFeatures((f) =>
-      f.map((x) => (x.id === id ? { ...x, [pkgKey]: !x[pkgKey] } : x)),
-    );
+  // ── Toggle — update popup ilə ──
+  const toggleFeat = (id, pkgKey) => {
+    const feat = features.find((f) => f.id === id);
+    const willEnable = !feat[pkgKey];
+    const pkgLabel = PKG_KEYS.find((p) => p.key === pkgKey)?.label ?? pkgKey;
 
+    setPopup({
+      isOpen: true,
+      type: "update",
+      title: willEnable ? "Xüsusiyyəti aktiv et?" : "Xüsusiyyəti deaktiv et?",
+      message: `"${feat.name}" xüsusiyyəti "${pkgLabel}" paketi üçün ${willEnable ? "aktiv" : "deaktiv"} ediləcək.`,
+      confirmText: willEnable ? "Aktiv et" : "Deaktiv et",
+      onConfirm: () => {
+        setFeatures((f) =>
+          f.map((x) => (x.id === id ? { ...x, [pkgKey]: !x[pkgKey] } : x)),
+        );
+        closePopup();
+      },
+    });
+  };
+
+  // ── Əlavə et — success popup ──
   const handleAdd = () => {
     const newId =
       features.length > 0 ? features[features.length - 1].id + 1 : 1;
@@ -161,16 +311,77 @@ export default function PackageMain() {
     ]);
   };
 
-  const handleDelete = (id) => setFeatures(features.filter((f) => f.id !== id));
-
-  const handleSave = () => {
-    console.log("Paketlər:", packages);
-    console.log("Xüsusiyyətlər:", features);
-    alert("Dəyişikliklər uğurla yadda saxlanıldı!");
+  // ── Sil — delete popup ilə təsdiq ──
+  const handleDelete = (id) => {
+    const feat = features.find((f) => f.id === id);
+    setPopup({
+      isOpen: true,
+      type: "delete",
+      title: "Xüsusiyyəti sil?",
+      message: `"${feat?.name || "Bu xüsusiyyət"}" silinəcək. Bu əməliyyat geri qaytarıla bilməz.`,
+      confirmText: "Sil",
+      onConfirm: () => {
+        setFeatures((f) => f.filter((x) => x.id !== id));
+        closePopup();
+      },
+    });
   };
 
+  // ── Yadda saxla — update popup, sonra success ──
+  const handleSave = () => {
+    // Boş adlı xüsusiyyət varsa xəta
+    const hasEmpty = features.some((f) => !f.name.trim());
+    if (hasEmpty) {
+      setPopup({
+        isOpen: true,
+        type: "error",
+        title: "Xəta!",
+        message: "Bəzi xüsusiyyətlərin adı boşdur. Zəhmət olmasa doldurun.",
+        confirmText: "Anladım",
+        onConfirm: closePopup,
+      });
+      return;
+    }
+
+    setPopup({
+      isOpen: true,
+      type: "update",
+      title: "Dəyişiklikləri yadda saxla?",
+      message: "Bütün paket və xüsusiyyət məlumatları yenilənəcək.",
+      confirmText: "Yadda Saxla",
+      onConfirm: () => {
+        // API çağırışı buraya yazılacaq
+        console.log("Paketlər:", packages);
+        console.log("Xüsusiyyətlər:", features);
+        setPopup({
+          isOpen: true,
+          type: "success",
+          title: "Uğurla saxlanıldı!",
+          message: "Dəyişikliklər sistemə tətbiq edildi.",
+          confirmText: "Əla",
+          onConfirm: closePopup,
+        });
+      },
+    });
+  };
+
+  // ─────────────────────────────────────────────
+  // RENDER
+  // ─────────────────────────────────────────────
   return (
     <div className="pkg-admin">
+      {/* POPUP */}
+      <Popup
+        isOpen={popup.isOpen}
+        type={popup.type}
+        title={popup.title}
+        message={popup.message}
+        confirmText={popup.confirmText}
+        cancelText="Ləğv et"
+        onConfirm={popup.onConfirm}
+        onCancel={closePopup}
+      />
+
       {/* HEADER */}
       <div className="pkg-admin__header">
         <div className="pkg-admin__header-texts">
@@ -227,7 +438,6 @@ export default function PackageMain() {
                 />
               </div>
 
-              {/* Minimum profil sayı — yalnız biznes */}
               <div className="pkg-admin__pkg-field">
                 <label className="pkg-admin__field-label">
                   Minimum Profil Sayı
@@ -254,7 +464,6 @@ export default function PackageMain() {
                 )}
               </div>
 
-              {/* Aylıq qiymət */}
               <div className="pkg-admin__pkg-field">
                 <label className="pkg-admin__field-label">
                   Aylıq Qiymət (₼/ay)

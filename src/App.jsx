@@ -37,13 +37,13 @@ function App() {
         <Route element={<PrivateRoutes />}>
           <Route path="/analys" element={<AnalysPage />} />
           <Route path="/users" element={<UsersPage />} />
-          <Route path="/palets" element={<PaletsPage />} />
-          <Route path="/applications" element={<ApplicationsPage />} />
-          <Route path="/settings" element={<SettingPage />} />
-          <Route path="/packages" element={<PackagePage />} />
-          <Route path="/payment" element={<PaymentPage />} />
-          <Route path="/archive" element={<ArchivePage />} />
           <Route path="/categorys" element={<CategoryPage />} />
+          <Route path="/payment" element={<PaymentPage />} />
+          <Route path="/applications" element={<ApplicationsPage />} />
+          <Route path="/palets" element={<PaletsPage />} />
+          <Route path="/packages" element={<PackagePage />} />
+          <Route path="/archive" element={<ArchivePage />} />
+          <Route path="/settings" element={<SettingPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />

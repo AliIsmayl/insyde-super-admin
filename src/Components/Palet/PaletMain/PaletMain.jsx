@@ -11,12 +11,12 @@ import {
   FiRefreshCw,
 } from "react-icons/fi";
 import "./PaletMain.scss";
+import Popup from "../../Popup/Popup";
 
 /* ─────────────────────────────────────────────────────────── */
 /*  GRADIENT GENERATOR                                          */
 /* ─────────────────────────────────────────────────────────── */
 
-/** hex → {r,g,b} */
 function hexToRgb(hex) {
   const h = hex.replace("#", "");
   return {
@@ -26,7 +26,6 @@ function hexToRgb(hex) {
   };
 }
 
-/** rgb → hex */
 function rgbToHex(r, g, b) {
   return (
     "#" +
@@ -40,7 +39,6 @@ function rgbToHex(r, g, b) {
   );
 }
 
-/** Rəng qarışdır: base + white/black */
 function mix(hex, white = 0, black = 0) {
   const { r, g, b } = hexToRgb(hex);
   return {
@@ -55,24 +53,17 @@ function mixHex(hex, white = 0, black = 0) {
   return rgbToHex(r, g, b);
 }
 
-/**
- * Əsas rəngdən light + dark hero-gradient CSS dəyişənlərini generasiya edir.
- * Məntiqi: bd.scss-dəki --hero-gradient strukturuna uyğundur.
- */
 function generateGradients(hex) {
   const { r, g, b } = hexToRgb(hex);
 
-  // Light — isti krem fon üzərindəki rəng
-  const lightMid = mixHex(hex, 0.45, 0); // rəng + ağ
-  const lightDeep = mixHex(hex, 0, 0.15); // bir az tündləş
-  const lightBg1 = mixHex(hex, 0.62, 0); // açıq
-  const lightBg2 = mixHex(hex, 0.38, 0.05);
+  const lightMid = mixHex(hex, 0.45, 0);
+  const lightDeep = mixHex(hex, 0, 0.15);
+  const lightBg1 = mixHex(hex, 0.62, 0);
 
   const light = `radial-gradient(ellipse 80% 60% at 20% 30%, rgba(${r},${g},${b},0.55) 0%, transparent 65%),
     radial-gradient(ellipse 60% 50% at 80% 70%, rgba(${hexToRgb(lightDeep).r},${hexToRgb(lightDeep).g},${hexToRgb(lightDeep).b},0.3) 0%, transparent 60%),
     linear-gradient(160deg, ${lightBg1} 0%, ${lightMid} 30%, ${hex} 60%, ${lightDeep} 100%)`;
 
-  // Dark — qaranlıq, dərin fon üzərindəki rəng
   const darkBase = mixHex(hex, 0, 0.45);
   const darkDeep = mixHex(hex, 0, 0.72);
   const darkDeep2 = mixHex(hex, 0, 0.85);
@@ -123,6 +114,18 @@ const initialColors = [
 ];
 
 /* ─────────────────────────────────────────────────────────── */
+/*  POPUP BAŞLANĞIC VƏZİYYƏTİ                                  */
+/* ─────────────────────────────────────────────────────────── */
+const defaultPopup = {
+  isOpen: false,
+  type: "success",
+  title: "",
+  message: "",
+  confirmText: undefined,
+  onConfirm: null,
+};
+
+/* ─────────────────────────────────────────────────────────── */
 /*  MAIN COMPONENT                                              */
 /* ─────────────────────────────────────────────────────────── */
 export default function PaletMain() {
@@ -134,9 +137,15 @@ export default function PaletMain() {
   const [addMode, setAddMode] = useState(false);
   const [newName, setNewName] = useState("");
   const [newHex, setNewHex] = useState("#000000");
-  const [deleteId, setDeleteId] = useState(null);
-  const [savedId, setSavedId] = useState(null);
 
+  /* ── POPUP STATE ── */
+  const [popup, setPopup] = useState(defaultPopup);
+  const closePopup = () => setPopup(defaultPopup);
+
+  const openPopup = (config) =>
+    setPopup({ ...defaultPopup, isOpen: true, ...config });
+
+  /* ── Computed ── */
   const selected = colors.find((c) => c.id === selectedId);
   const previewHex = editingId === selected?.id ? editHex : selected?.hex;
   const gradients = previewHex ? generateGradients(previewHex) : null;
@@ -148,16 +157,39 @@ export default function PaletMain() {
     setEditHex(color.hex);
     setAddMode(false);
   };
+
   const cancelEdit = () => setEditingId(null);
+
   const saveEdit = (id) => {
     if (!editName.trim()) return;
-    setColors((prev) =>
-      prev.map((c) =>
-        c.id === id ? { ...c, name: editName, hex: editHex } : c,
-      ),
-    );
-    setEditingId(null);
-    flash(id);
+
+    // 🔄 Yeniləmə təsdiq popup-u — təsdiqdən SONRA dəyişir
+    openPopup({
+      type: "update",
+      title: "Dəyişikliyi təsdiqləyin",
+      message: `"${editName}" rəngi yenilənəcək. Davam etmək istəyirsiniz?`,
+      confirmText: "Yenilə",
+      onConfirm: () => {
+        setColors((prev) =>
+          prev.map((c) =>
+            c.id === id ? { ...c, name: editName, hex: editHex } : c,
+          ),
+        );
+        setEditingId(null);
+        closePopup();
+
+        // ✅ Uğurlu yeniləmə bildirişi
+        setTimeout(() => {
+          openPopup({
+            type: "success",
+            title: "Yeniləndi!",
+            message: `"${editName}" rəngi uğurla yeniləndi.`,
+            confirmText: "Əla",
+            onConfirm: null,
+          });
+        }, 150);
+      },
+    });
   };
 
   /* ── ADD ── */
@@ -167,27 +199,44 @@ export default function PaletMain() {
     setNewHex("#C8A75E");
     setEditingId(null);
   };
+
   const cancelAdd = () => setAddMode(false);
+
   const saveAdd = () => {
     if (!newName.trim()) return;
     const id = Date.now();
     setColors((prev) => [...prev, { id, name: newName, hex: newHex }]);
     setSelectedId(id);
     setAddMode(false);
+
+    // ✅ Əlavə olundu popup-u
+    openPopup({
+      type: "success",
+      title: "Əlavə edildi!",
+      message: `"${newName}" rəngi palitrana əlavə edildi.`,
+      confirmText: "Əla",
+      onConfirm: null,
+    });
   };
 
   /* ── DELETE ── */
-  const doDelete = () => {
-    const remaining = colors.filter((c) => c.id !== deleteId);
-    setColors(remaining);
-    if (selectedId === deleteId) setSelectedId(remaining[0]?.id || null);
-    setDeleteId(null);
-    if (editingId === deleteId) setEditingId(null);
-  };
+  const confirmDelete = (colorId) => {
+    const colorToDelete = colors.find((c) => c.id === colorId);
 
-  const flash = (id) => {
-    setSavedId(id);
-    setTimeout(() => setSavedId(null), 1800);
+    // 🗑 Silmə təsdiq popup-u
+    openPopup({
+      type: "delete",
+      title: "Silmək istədiyinizdən əminsiniz?",
+      message: `"${colorToDelete?.name}" rəngi birdəfəlik silinəcək.`,
+      confirmText: "Sil",
+      onConfirm: () => {
+        const remaining = colors.filter((c) => c.id !== colorId);
+        setColors(remaining);
+        if (selectedId === colorId) setSelectedId(remaining[0]?.id || null);
+        if (editingId === colorId) setEditingId(null);
+        closePopup();
+      },
+    });
   };
 
   /* ── RANDOM HEX ── */
@@ -203,7 +252,7 @@ export default function PaletMain() {
       {/* ══ HEADER ══ */}
       <div className="palet__header">
         <div>
-          <h2 className="palet__title">Rəng Palitраları</h2>
+          <h2 className="palet__title">Rəng Palitraları</h2>
           <p className="palet__sub">
             Hər rəng üçün hero gradient avtomatik generasiya olunur — light və
             dark mode ayrı-ayrı.
@@ -233,7 +282,6 @@ export default function PaletMain() {
                     setAddMode(false);
                   }}
                 >
-                  {/* Kiçik gradient önizləməsi */}
                   <div
                     className="palet__list-swatch"
                     style={{
@@ -264,7 +312,7 @@ export default function PaletMain() {
                     className="palet__list-del"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setDeleteId(color.id);
+                      confirmDelete(color.id); // ← Popup ilə
                     }}
                     title="Sil"
                   >
@@ -325,11 +373,6 @@ export default function PaletMain() {
                   )}
                 </div>
                 <div className="palet__card-actions">
-                  {savedId === selected.id && (
-                    <span className="palet__saved-badge">
-                      <FiCheck /> Saxlanıldı
-                    </span>
-                  )}
                   {editingId === selected.id ? (
                     <>
                       <button
@@ -361,7 +404,6 @@ export default function PaletMain() {
                 <div className="palet__grad-section-title">
                   Hero Gradient Önizləməsi
                 </div>
-
                 <div className="palet__grad-grid">
                   <GradientPreview
                     label="Light Mode"
@@ -495,38 +537,23 @@ export default function PaletMain() {
         </div>
       )}
 
-      {/* ══ SİLMƏ MODALI ══ */}
-      {deleteId && (
-        <div
-          className="palet__modal-backdrop"
-          onClick={() => setDeleteId(null)}
-        >
-          <div className="palet__modal" onClick={(e) => e.stopPropagation()}>
-            <div className="palet__modal-icon">
-              <FiTrash2 />
-            </div>
-            <h4>Silmək istədiyinizdən əminsiniz?</h4>
-            <p>
-              <strong>{colors.find((c) => c.id === deleteId)?.name}</strong>{" "}
-              rəngi silinəcək.
-            </p>
-            <div className="palet__modal-actions">
-              <button
-                className="palet__btn palet__btn--ghost"
-                onClick={() => setDeleteId(null)}
-              >
-                Ləğv et
-              </button>
-              <button
-                className="palet__btn palet__btn--danger"
-                onClick={doDelete}
-              >
-                <FiTrash2 /> Sil
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ══ POPUP (Silmə + Uğur bildirişləri) ══ */}
+      <Popup
+        isOpen={popup.isOpen}
+        type={popup.type}
+        title={popup.title}
+        message={popup.message}
+        confirmText={popup.confirmText}
+        cancelText="Ləğv et"
+        onConfirm={() => {
+          if (popup.onConfirm) {
+            popup.onConfirm(); // onConfirm özü closePopup-u çağırır (delete üçün)
+          } else {
+            closePopup(); // success/error üçün sadəcə bağla
+          }
+        }}
+        onCancel={closePopup}
+      />
     </div>
   );
 }

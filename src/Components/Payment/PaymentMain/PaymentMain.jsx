@@ -11,6 +11,7 @@ import {
   FaCalendarCheck,
 } from "react-icons/fa";
 import "./PaymentMain.scss";
+import Popup from "../../Popup/Popup";
 
 const PACKAGE_OPTIONS = ["Starter", "Basic", "Premium", "Enterprise"];
 
@@ -49,8 +50,7 @@ function getDaysUntilNext(lastPaymentDate) {
   const next = new Date(last);
   next.setMonth(next.getMonth() + 1);
   const today = new Date();
-  const diff = Math.ceil((next - today) / (1000 * 60 * 60 * 24));
-  return diff;
+  return Math.ceil((next - today) / (1000 * 60 * 60 * 24));
 }
 
 function formatDate(dateStr) {
@@ -91,7 +91,12 @@ export default function PaymentMain() {
   const [nextId, setNextId] = useState(4);
   const [errors, setErrors] = useState({});
 
-  // Group payments by userCode
+  // ── Popup state ─────────────────────────────────────────────────
+  const [popup, setPopup] = useState({ isOpen: false });
+  const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
+  const openPopup = (cfg) => setPopup({ isOpen: true, ...cfg });
+
+  // ── Grouped & filtered ──────────────────────────────────────────
   const grouped = useMemo(() => {
     const map = {};
     payments.forEach((p) => {
@@ -101,17 +106,15 @@ export default function PaymentMain() {
     return map;
   }, [payments]);
 
-  // Filter by search
   const filteredKeys = useMemo(() => {
     const q = search.toLowerCase().trim();
     return Object.keys(grouped).filter((code) => {
-      const entries = grouped[code];
-      const name = entries[0]?.fullName?.toLowerCase() || "";
+      const name = grouped[code][0]?.fullName?.toLowerCase() || "";
       return code.toLowerCase().includes(q) || name.includes(q);
     });
   }, [grouped, search]);
 
-  // Stats
+  // ── Stats ───────────────────────────────────────────────────────
   const totalRevenue = useMemo(
     () => payments.reduce((sum, p) => sum + Number(p.paidAmount), 0),
     [payments],
@@ -126,6 +129,7 @@ export default function PaymentMain() {
     }).length;
   }, [grouped]);
 
+  // ── Validation ──────────────────────────────────────────────────
   const validate = () => {
     const e = {};
     if (!form.userCode.trim()) e.userCode = "Zəruri";
@@ -138,12 +142,8 @@ export default function PaymentMain() {
     return e;
   };
 
-  const handleAdd = () => {
-    const e = validate();
-    if (Object.keys(e).length) {
-      setErrors(e);
-      return;
-    }
+  // ── Əlavə et — real iş ──────────────────────────────────────────
+  const doAdd = () => {
     const newPayment = {
       id: nextId,
       userCode: form.userCode.trim().toUpperCase(),
@@ -157,30 +157,64 @@ export default function PaymentMain() {
     setNextId((n) => n + 1);
     setForm(emptyForm);
     setErrors({});
-    // Auto-expand the newly added user
-    setExpandedUsers((prev) => ({
-      ...prev,
-      [newPayment.userCode]: true,
-    }));
+    setExpandedUsers((prev) => ({ ...prev, [newPayment.userCode]: true }));
   };
 
-  const handleDelete = (id) => {
-    setPayments((prev) => prev.filter((p) => p.id !== id));
+  // ── Əlavə et — popup ilə ────────────────────────────────────────
+  const handleAdd = () => {
+    const e = validate();
+    if (Object.keys(e).length) {
+      setErrors(e);
+      return;
+    }
+    openPopup({
+      type: "success",
+      title: "Ödəniş əlavə edilsin?",
+      message: `${form.fullName.trim()} (${form.userCode.trim().toUpperCase()}) üçün ${Number(form.paidAmount)} ₼ məbləğində ödəniş qeydə alınacaq.`,
+      confirmText: "Əlavə Et",
+      onConfirm: doAdd,
+    });
   };
 
-  const toggleExpand = (code) => {
+  // ── Sil — popup ilə ─────────────────────────────────────────────
+  const handleDelete = (entry, e) => {
+    e.stopPropagation();
+    openPopup({
+      type: "delete",
+      title: "Ödənişi silmək istəyirsiniz?",
+      message: `${entry.fullName} — ${formatDate(entry.lastPaymentDate)} tarixli ${entry.paidAmount} ₼ ödənişi silinəcək. Bu əməliyyat geri alına bilməz.`,
+      confirmText: "Sil",
+      onConfirm: () =>
+        setPayments((prev) => prev.filter((p) => p.id !== entry.id)),
+    });
+  };
+
+  const toggleExpand = (code) =>
     setExpandedUsers((prev) => ({ ...prev, [code]: !prev[code] }));
-  };
 
   const handleFormChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    if (errors[e.target.name]) {
+    if (errors[e.target.name])
       setErrors({ ...errors, [e.target.name]: undefined });
-    }
   };
 
   return (
     <div className="payment-main">
+      {/* ── Popup ── */}
+      <Popup
+        isOpen={popup.isOpen}
+        type={popup.type}
+        title={popup.title}
+        message={popup.message}
+        confirmText={popup.confirmText}
+        cancelText="Ləğv et"
+        onConfirm={() => {
+          popup.onConfirm?.();
+          closePopup();
+        }}
+        onCancel={closePopup}
+      />
+
       {/* HEADER */}
       <div className="pm-header">
         <div className="pm-header__left">
@@ -353,7 +387,7 @@ export default function PaymentMain() {
 
           return (
             <div className="pm-user-block" key={code}>
-              {/* USER ROW (HEADER) */}
+              {/* USER ROW */}
               <div
                 className={`pm-user-row ${isExpanded ? "expanded" : ""}`}
                 onClick={() => toggleExpand(code)}
@@ -367,7 +401,6 @@ export default function PaymentMain() {
                     <span className="pm-user-code">{code}</span>
                   </div>
                 </div>
-
                 <div className="pm-user-row__meta">
                   <div className="pm-meta-item">
                     <span className="pm-meta-label">Paket</span>
@@ -394,13 +427,12 @@ export default function PaymentMain() {
                     <span className="pm-count-badge">{entries.length}</span>
                   </div>
                 </div>
-
                 <div className="pm-chevron">
                   {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
                 </div>
               </div>
 
-              {/* EXPANDED: PAYMENT HISTORY */}
+              {/* HISTORY */}
               {isExpanded && (
                 <div className="pm-history">
                   <div className="pm-history-header">
@@ -445,10 +477,7 @@ export default function PaymentMain() {
                           </span>
                           <button
                             className="pm-delete-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(entry.id);
-                            }}
+                            onClick={(e) => handleDelete(entry, e)}
                           >
                             <FaTrashAlt />
                           </button>

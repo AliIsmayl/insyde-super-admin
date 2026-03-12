@@ -5,10 +5,17 @@ import * as BiIcons from "react-icons/bi";
 import * as MdIcons from "react-icons/md";
 import * as AiIcons from "react-icons/ai";
 import {
-  FiPlus, FiTrash2, FiTag, FiAlertTriangle,
-  FiCheck, FiEdit2, FiX, FiSave,
+  FiPlus,
+  FiTrash2,
+  FiTag,
+  FiAlertTriangle,
+  FiCheck,
+  FiEdit2,
+  FiX,
+  FiSave,
 } from "react-icons/fi";
 import "./CategoryMain.scss";
+import Popup from "../../Popup/Popup";
 
 // ── Bütün ikon kitabxanalarını birləşdir ─────────────────────────
 const ALL_ICONS = {
@@ -19,18 +26,15 @@ const ALL_ICONS = {
   ...AiIcons,
 };
 
-// ── İkon kodundan komponenti tap ─────────────────────────────────
 function resolveIcon(iconCode) {
   if (!iconCode || !iconCode.trim()) return null;
-  const key = iconCode.trim();
-  return ALL_ICONS[key] || null;
+  return ALL_ICONS[iconCode.trim()] || null;
 }
 
-// ── Başlanğıc kateqoriyalar ──────────────────────────────────────
 const initialCategories = [
-  { id: 1, name: "İnstagram",  iconCode: "FaInstagram"  },
-  { id: 2, name: "Facebook",   iconCode: "FaFacebook"   },
-  { id: 3, name: "LinkedIn",   iconCode: "FaLinkedin"   },
+  { id: 1, name: "İnstagram", iconCode: "FaInstagram" },
+  { id: 2, name: "Facebook", iconCode: "FaFacebook" },
+  { id: 3, name: "LinkedIn", iconCode: "FaLinkedin" },
 ];
 
 export default function CategoryMain() {
@@ -38,17 +42,19 @@ export default function CategoryMain() {
 
   // ── Form state ──────────────────────────────────────────────────
   const [iconCode, setIconCode] = useState("");
-  const [catName, setCatName]   = useState("");
+  const [catName, setCatName] = useState("");
   const [confirmed, setConfirmed] = useState(false);
 
   // ── Düzəliş state ───────────────────────────────────────────────
-  const [editId, setEditId]         = useState(null);
+  const [editId, setEditId] = useState(null);
   const [editIconCode, setEditIconCode] = useState("");
-  const [editName, setEditName]     = useState("");
+  const [editName, setEditName] = useState("");
   const [editConfirmed, setEditConfirmed] = useState(false);
 
-  // ── Silmə state ─────────────────────────────────────────────────
-  const [deleteId, setDeleteId] = useState(null);
+  // ── Popup state ─────────────────────────────────────────────────
+  const [popup, setPopup] = useState({ isOpen: false });
+  const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
+  const openPopup = (cfg) => setPopup({ isOpen: true, ...cfg });
 
   // ── Yeni form ───────────────────────────────────────────────────
   const PreviewIcon = resolveIcon(iconCode);
@@ -63,7 +69,7 @@ export default function CategoryMain() {
     setConfirmed(false);
   };
 
-  const handleAdd = () => {
+  const doAdd = () => {
     if (!catName.trim() || !confirmed || !previewValid) return;
     setCategories((prev) => [
       ...prev,
@@ -72,6 +78,17 @@ export default function CategoryMain() {
     setIconCode("");
     setCatName("");
     setConfirmed(false);
+  };
+
+  const handleAdd = () => {
+    if (!catName.trim() || !confirmed || !previewValid) return;
+    openPopup({
+      type: "success",
+      title: "Kateqoriya əlavə edilsin?",
+      message: `"${catName.trim()}" adlı yeni kateqoriya siyahıya əlavə ediləcək.`,
+      confirmText: "Əlavə Et",
+      onConfirm: doAdd,
+    });
   };
 
   // ── Düzəliş ─────────────────────────────────────────────────────
@@ -92,35 +109,66 @@ export default function CategoryMain() {
     setEditConfirmed(false);
   };
 
-  const saveEdit = () => {
+  const doSaveEdit = () => {
     if (!editName.trim() || !editConfirmed || !editPreviewValid) return;
     setCategories((prev) =>
       prev.map((c) =>
         c.id === editId
           ? { ...c, name: editName.trim(), iconCode: editIconCode.trim() }
-          : c
-      )
+          : c,
+      ),
     );
     cancelEdit();
   };
 
-  // ── Silmə ───────────────────────────────────────────────────────
-  const doDelete = () => {
-    setCategories((prev) => prev.filter((c) => c.id !== deleteId));
-    setDeleteId(null);
+  const handleSaveEdit = () => {
+    if (!editName.trim() || !editConfirmed || !editPreviewValid) return;
+    openPopup({
+      type: "update",
+      title: "Dəyişikliklər saxlanılsın?",
+      message: `"${editName.trim()}" kateqoriyası yenilənəcək.`,
+      confirmText: "Yenilə",
+      onConfirm: doSaveEdit,
+    });
   };
 
-  const deleteTarget = categories.find((c) => c.id === deleteId);
+  // ── Silmə ───────────────────────────────────────────────────────
+  const handleDeleteClick = (cat) => {
+    openPopup({
+      type: "delete",
+      title: "Silmək istədiyinizdən əminsiniz?",
+      message: `"${cat.name}" kateqoriyası silinəcək. Bu əməliyyat geri alına bilməz.`,
+      confirmText: "Sil",
+      onConfirm: () => {
+        setCategories((prev) => prev.filter((c) => c.id !== cat.id));
+      },
+    });
+  };
 
   return (
     <div className="cat">
+      {/* ── Popup ── */}
+      <Popup
+        isOpen={popup.isOpen}
+        type={popup.type}
+        title={popup.title}
+        message={popup.message}
+        confirmText={popup.confirmText}
+        cancelText="Ləğv et"
+        onConfirm={() => {
+          popup.onConfirm?.();
+          closePopup();
+        }}
+        onCancel={closePopup}
+      />
 
       {/* ══ HEADER ══════════════════════════════════════════════════ */}
       <div className="cat__header">
         <div>
           <h2 className="cat__title">Kateqoriyalar</h2>
           <p className="cat__sub">
-            Platforma kateqoriyalarını idarə edin. React ikon kodu daxil edib önizləmə ilə təsdiqləyin.
+            Platforma kateqoriyalarını idarə edin. React ikon kodu daxil edib
+            önizləmə ilə təsdiqləyin.
           </p>
         </div>
         <div className="cat__stat">
@@ -131,14 +179,12 @@ export default function CategoryMain() {
 
       {/* ══ LAYOUT ═════════════════════════════════════════════════ */}
       <div className="cat__layout">
-
         {/* ── SOL: Yeni kateqoriya forması ─────────────────────── */}
         <div className="cat__form-card">
           <div className="cat__form-title">
             <FiPlus /> Yeni Kateqoriya
           </div>
 
-          {/* İkon kodu */}
           <div className="cat__field">
             <label>İkon Kodu</label>
             <input
@@ -150,7 +196,6 @@ export default function CategoryMain() {
             />
           </div>
 
-          {/* Kateqoriya adı */}
           <div className="cat__field">
             <label>Kateqoriya Adı</label>
             <input
@@ -163,11 +208,8 @@ export default function CategoryMain() {
             />
           </div>
 
-          {/* Önizləmə */}
           <div className="cat__preview-row">
-            <span className="cat__preview-label">
-              Önizləmə:
-            </span>
+            <span className="cat__preview-label">Önizləmə:</span>
             {iconCode.trim() === "" ? (
               <span className="cat__preview-hint">İkon kodu daxil edin</span>
             ) : previewValid ? (
@@ -175,9 +217,7 @@ export default function CategoryMain() {
                 <div className="cat__preview-icon">
                   <PreviewIcon />
                 </div>
-                <span className="cat__preview-name">
-                  {catName || "—"}
-                </span>
+                <span className="cat__preview-name">{catName || "—"}</span>
                 {!confirmed ? (
                   <button
                     className="cat__confirm-btn"
@@ -199,7 +239,6 @@ export default function CategoryMain() {
             )}
           </div>
 
-          {/* Əlavə et düyməsi */}
           <button
             className="cat__add-btn"
             onClick={handleAdd}
@@ -237,7 +276,6 @@ export default function CategoryMain() {
                     /* ── Düzəliş rejimi ── */
                     <div className="cat__edit-row">
                       <div className="cat__edit-fields">
-                        {/* İkon kodu */}
                         <input
                           type="text"
                           className="cat__input cat__input--sm"
@@ -248,7 +286,6 @@ export default function CategoryMain() {
                             setEditConfirmed(false);
                           }}
                         />
-                        {/* Ad */}
                         <input
                           type="text"
                           className="cat__input cat__input--sm"
@@ -256,7 +293,6 @@ export default function CategoryMain() {
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
                         />
-                        {/* Önizləmə */}
                         <div className="cat__edit-preview">
                           {editPreviewValid ? (
                             <>
@@ -284,12 +320,15 @@ export default function CategoryMain() {
                         </div>
                       </div>
 
-                      {/* Saxla / Ləğv */}
                       <div className="cat__edit-actions">
                         <button
                           className="cat__icon-btn cat__icon-btn--save"
-                          onClick={saveEdit}
-                          disabled={!editName.trim() || !editConfirmed || !editPreviewValid}
+                          onClick={handleSaveEdit}
+                          disabled={
+                            !editName.trim() ||
+                            !editConfirmed ||
+                            !editPreviewValid
+                          }
                           title="Saxla"
                         >
                           <FiSave />
@@ -325,7 +364,7 @@ export default function CategoryMain() {
                         </button>
                         <button
                           className="cat__icon-btn cat__icon-btn--del"
-                          onClick={() => setDeleteId(cat.id)}
+                          onClick={() => handleDeleteClick(cat)}
                           title="Sil"
                         >
                           <FiTrash2 />
@@ -339,42 +378,6 @@ export default function CategoryMain() {
           </div>
         </div>
       </div>
-
-      {/* ══ SİLMƏ MODALI ════════════════════════════════════════════ */}
-      {deleteId && (
-        <div
-          className="cat__modal-backdrop"
-          onClick={() => setDeleteId(null)}
-        >
-          <div
-            className="cat__modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="cat__modal-icon">
-              <FiTrash2 />
-            </div>
-            <h4>Silmək istədiyinizdən əminsiniz?</h4>
-            <p>
-              <strong>{deleteTarget?.name}</strong> kateqoriyası silinəcək.
-              Bu əməliyyat geri alına bilməz.
-            </p>
-            <div className="cat__modal-actions">
-              <button
-                className="cat__btn cat__btn--ghost"
-                onClick={() => setDeleteId(null)}
-              >
-                Ləğv et
-              </button>
-              <button
-                className="cat__btn cat__btn--danger"
-                onClick={doDelete}
-              >
-                <FiTrash2 /> Sil
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -23,6 +23,7 @@ import {
   FiPackage,
 } from "react-icons/fi";
 import "./ApplicationsMain.scss";
+import Popup from "../../Popup/Popup";
 
 /* ─────────────────────────────────────────────────────────── */
 /*  MOCK DATA                                                   */
@@ -171,7 +172,7 @@ Admin Komandası`;
 }
 
 /* ─────────────────────────────────────────────────────────── */
-/*  ACTIVATION ITEM  (superadmin tərəfi)                       */
+/*  ACTIVATION ITEM                                             */
 /* ─────────────────────────────────────────────────────────── */
 function ActivationItem({
   req,
@@ -182,7 +183,6 @@ function ActivationItem({
   onCopy,
 }) {
   const isOpen = openId === req.id;
-
   return (
     <div
       className={`app-admin__item activation-item ${isOpen ? "app-admin__item--open" : ""} ${req.status === "Tamamlandı" ? "activation-item--done" : ""}`}
@@ -221,9 +221,7 @@ function ActivationItem({
           <FiChevronDown className="app-admin__chevron" />
         </div>
       </div>
-
       <div className="app-admin__item-body">
-        {/* Şablon qutusu */}
         <div className="activation-item__template-box">
           <div className="activation-item__template-header">
             <span>
@@ -248,8 +246,6 @@ function ActivationItem({
             {generateTemplate(req)}
           </pre>
         </div>
-
-        {/* Status dəyiş */}
         {req.status === "Gözləyir" && (
           <div className="app-admin__reply-form">
             <div className="app-admin__msg-label">
@@ -269,7 +265,6 @@ function ActivationItem({
             </div>
           </div>
         )}
-
         {req.status === "Tamamlandı" && (
           <div className="activation-item__done-banner">
             <FiCheckCircle />
@@ -285,7 +280,7 @@ function ActivationItem({
 }
 
 /* ─────────────────────────────────────────────────────────── */
-/*  COMPOSE MODAL                                               */
+/*  COMPOSE MODAL  —  Popup inteqrasiyası ilə                  */
 /* ─────────────────────────────────────────────────────────── */
 function ComposeModal({ onClose, onSend }) {
   const [mode, setMode] = useState("individual");
@@ -295,6 +290,11 @@ function ComposeModal({ onClose, onSend }) {
   const [expectReply, setExpectReply] = useState(false);
   const [sending, setSending] = useState(false);
   const [search, setSearch] = useState("");
+
+  /* ── Daxili Popup state ── */
+  const [popup, setPopup] = useState({ isOpen: false });
+  const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
+  const openPopup = (cfg) => setPopup({ isOpen: true, ...cfg });
 
   const filtered = ALL_USERS.filter(
     (u) =>
@@ -311,13 +311,15 @@ function ComposeModal({ onClose, onSend }) {
     );
   };
 
+  const hasContent = subject.trim() || body.trim() || selectedUsers.length > 0;
+
   const canSend =
     subject.trim() &&
     body.trim() &&
     (mode === "broadcast" || selectedUsers.length > 0);
 
-  const handleSend = () => {
-    if (!canSend) return;
+  /* ── Real göndərmə ── */
+  const doSend = () => {
     setSending(true);
     setTimeout(() => {
       const recipients = mode === "broadcast" ? ALL_USERS : selectedUsers;
@@ -327,166 +329,221 @@ function ComposeModal({ onClose, onSend }) {
     }, 700);
   };
 
+  /* ── Göndər — popup ilə ── */
+  const handleSend = () => {
+    if (!canSend) return;
+    const recipients = mode === "broadcast" ? ALL_USERS : selectedUsers;
+    const recipientText =
+      mode === "broadcast"
+        ? `Bütün ${ALL_USERS.length} istifadəçiyə`
+        : recipients.length === 1
+          ? `"${recipients[0].name}" istifadəçisinə`
+          : `${recipients.length} istifadəçiyə`;
+
+    openPopup({
+      type: "success",
+      title: "Mesaj göndərilsin?",
+      message: `"${subject}" mövzusunda mesaj ${recipientText} göndəriləcək.${expectReply ? " Geri dönüş gözlənilir." : ""}`,
+      confirmText: "Göndər",
+      onConfirm: doSend,
+    });
+  };
+
+  /* ── Ləğv et / X / overlay — mətn varsa xəbərdar et ── */
+  const handleClose = () => {
+    if (!hasContent) {
+      onClose();
+      return;
+    }
+    openPopup({
+      type: "delete",
+      title: "Mesajdan çıxmaq istəyirsiniz?",
+      message:
+        "Yazılmış məlumatlar yadda saxlanılmayacaq. Bu əməliyyat geri alına bilməz.",
+      confirmText: "Sil və Çıx",
+      onConfirm: onClose,
+    });
+  };
+
   return (
-    <div
-      className="compose-overlay"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className="compose-modal">
-        <div className="compose-modal__header">
-          <div className="compose-modal__header-left">
-            <FiEdit3 />
-            <h3>Yeni Mesaj</h3>
+    <>
+      {/* Popup compose-overlay-in üzərində render olunur */}
+      <Popup
+        isOpen={popup.isOpen}
+        type={popup.type}
+        title={popup.title}
+        message={popup.message}
+        confirmText={popup.confirmText}
+        cancelText="Ləğv et"
+        onConfirm={() => {
+          popup.onConfirm?.();
+          closePopup();
+        }}
+        onCancel={closePopup}
+      />
+
+      <div
+        className="compose-overlay"
+        onClick={(e) => e.target === e.currentTarget && handleClose()}
+      >
+        <div className="compose-modal">
+          <div className="compose-modal__header">
+            <div className="compose-modal__header-left">
+              <FiEdit3 />
+              <h3>Yeni Mesaj</h3>
+            </div>
+            <button className="compose-modal__close" onClick={handleClose}>
+              <FiX />
+            </button>
           </div>
-          <button className="compose-modal__close" onClick={onClose}>
-            <FiX />
-          </button>
-        </div>
 
-        <div className="compose-modal__mode-row">
-          <button
-            className={`compose-modal__mode-btn ${mode === "individual" ? "active" : ""}`}
-            onClick={() => {
-              setMode("individual");
-              setSelectedUsers([]);
-            }}
-          >
-            <FiUser /> Fərdi
-          </button>
-          <button
-            className={`compose-modal__mode-btn ${mode === "broadcast" ? "active" : ""}`}
-            onClick={() => {
-              setMode("broadcast");
-              setSelectedUsers([]);
-            }}
-          >
-            <FiUsers /> Hamıya (Kütləvi)
-          </button>
-        </div>
+          <div className="compose-modal__mode-row">
+            <button
+              className={`compose-modal__mode-btn ${mode === "individual" ? "active" : ""}`}
+              onClick={() => {
+                setMode("individual");
+                setSelectedUsers([]);
+              }}
+            >
+              <FiUser /> Fərdi
+            </button>
+            <button
+              className={`compose-modal__mode-btn ${mode === "broadcast" ? "active" : ""}`}
+              onClick={() => {
+                setMode("broadcast");
+                setSelectedUsers([]);
+              }}
+            >
+              <FiUsers /> Hamıya (Kütləvi)
+            </button>
+          </div>
 
-        {mode === "individual" && (
-          <div className="compose-modal__recipients">
+          {mode === "individual" && (
+            <div className="compose-modal__recipients">
+              <label className="compose-modal__label">
+                <FiUsers /> Alıcılar seçin
+              </label>
+              <input
+                className="compose-modal__search"
+                placeholder="Ad, e-mail və ya kod axtar..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <div className="compose-modal__user-list">
+                {filtered.map((u) => {
+                  const sel = !!selectedUsers.find((x) => x.id === u.id);
+                  return (
+                    <div
+                      key={u.id}
+                      className={`compose-modal__user-item ${sel ? "selected" : ""}`}
+                      onClick={() => toggleUser(u)}
+                    >
+                      <div className="compose-modal__user-avatar">
+                        {u.name.charAt(0)}
+                      </div>
+                      <div className="compose-modal__user-info">
+                        <span className="compose-modal__user-name">
+                          {u.name}
+                        </span>
+                        <span className="compose-modal__user-sub">
+                          {u.email} · {u.code}
+                        </span>
+                      </div>
+                      {sel && (
+                        <FiCheckCircle className="compose-modal__user-check" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              {selectedUsers.length > 0 && (
+                <div className="compose-modal__selected-chips">
+                  {selectedUsers.map((u) => (
+                    <span key={u.id} className="compose-modal__chip">
+                      {u.name}
+                      <button onClick={() => toggleUser(u)}>
+                        <FiX />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {mode === "broadcast" && (
+            <div className="compose-modal__broadcast-banner">
+              <FiUsers />
+              <span>
+                Bu mesaj <strong>bütün {ALL_USERS.length} istifadəçiyə</strong>{" "}
+                göndəriləcək.
+              </span>
+            </div>
+          )}
+
+          <div className="compose-modal__field">
             <label className="compose-modal__label">
-              <FiUsers /> Alıcılar seçin
+              <FiMail /> Mövzu
             </label>
             <input
-              className="compose-modal__search"
-              placeholder="Ad, e-mail və ya kod axtar..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              className="compose-modal__input"
+              placeholder="Mesaj mövzusu..."
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
             />
-            <div className="compose-modal__user-list">
-              {filtered.map((u) => {
-                const sel = !!selectedUsers.find((x) => x.id === u.id);
-                return (
-                  <div
-                    key={u.id}
-                    className={`compose-modal__user-item ${sel ? "selected" : ""}`}
-                    onClick={() => toggleUser(u)}
-                  >
-                    <div className="compose-modal__user-avatar">
-                      {u.name.charAt(0)}
-                    </div>
-                    <div className="compose-modal__user-info">
-                      <span className="compose-modal__user-name">{u.name}</span>
-                      <span className="compose-modal__user-sub">
-                        {u.email} · {u.code}
-                      </span>
-                    </div>
-                    {sel && (
-                      <FiCheckCircle className="compose-modal__user-check" />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            {selectedUsers.length > 0 && (
-              <div className="compose-modal__selected-chips">
-                {selectedUsers.map((u) => (
-                  <span key={u.id} className="compose-modal__chip">
-                    {u.name}
-                    <button onClick={() => toggleUser(u)}>
-                      <FiX />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
-        )}
 
-        {mode === "broadcast" && (
-          <div className="compose-modal__broadcast-banner">
-            <FiUsers />
-            <span>
-              Bu mesaj <strong>bütün {ALL_USERS.length} istifadəçiyə</strong>{" "}
-              göndəriləcək.
-            </span>
+          <div className="compose-modal__field">
+            <label className="compose-modal__label">
+              <FiMessageSquare /> Mətn
+            </label>
+            <textarea
+              className="compose-modal__textarea"
+              rows={5}
+              placeholder="Mesajınızı yazın..."
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+            />
           </div>
-        )}
 
-        <div className="compose-modal__field">
-          <label className="compose-modal__label">
-            <FiMail /> Mövzu
-          </label>
-          <input
-            className="compose-modal__input"
-            placeholder="Mesaj mövzusu..."
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-          />
-        </div>
-
-        <div className="compose-modal__field">
-          <label className="compose-modal__label">
-            <FiMessageSquare /> Mətn
-          </label>
-          <textarea
-            className="compose-modal__textarea"
-            rows={5}
-            placeholder="Mesajınızı yazın..."
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-          />
-        </div>
-
-        <div
-          className="compose-modal__toggle-row"
-          onClick={() => setExpectReply((v) => !v)}
-        >
-          <div className="compose-modal__toggle-info">
-            <FiCornerUpLeft />
-            <div>
-              <span className="compose-modal__toggle-label">
-                Geri dönüş gözlənilir
-              </span>
-              <span className="compose-modal__toggle-sub">
-                İstifadəçilərin bu mesaja cavab verməsi gözlənilir
-              </span>
-            </div>
-          </div>
           <div
-            className={`compose-modal__toggle-icon ${expectReply ? "on" : ""}`}
+            className="compose-modal__toggle-row"
+            onClick={() => setExpectReply((v) => !v)}
           >
-            {expectReply ? <FiToggleRight /> : <FiToggleLeft />}
+            <div className="compose-modal__toggle-info">
+              <FiCornerUpLeft />
+              <div>
+                <span className="compose-modal__toggle-label">
+                  Geri dönüş gözlənilir
+                </span>
+                <span className="compose-modal__toggle-sub">
+                  İstifadəçilərin bu mesaja cavab verməsi gözlənilir
+                </span>
+              </div>
+            </div>
+            <div
+              className={`compose-modal__toggle-icon ${expectReply ? "on" : ""}`}
+            >
+              {expectReply ? <FiToggleRight /> : <FiToggleLeft />}
+            </div>
           </div>
-        </div>
 
-        <div className="compose-modal__footer">
-          <button className="compose-modal__cancel-btn" onClick={onClose}>
-            Ləğv et
-          </button>
-          <button
-            className="compose-modal__send-btn"
-            onClick={handleSend}
-            disabled={!canSend || sending}
-          >
-            {sending ? <span className="app-admin__spinner" /> : <FiSend />}
-            {sending ? "Göndərilir..." : "Göndər"}
-          </button>
+          <div className="compose-modal__footer">
+            <button className="compose-modal__cancel-btn" onClick={handleClose}>
+              Ləğv et
+            </button>
+            <button
+              className="compose-modal__send-btn"
+              onClick={handleSend}
+              disabled={!canSend || sending}
+            >
+              {sending ? <span className="app-admin__spinner" /> : <FiSend />}
+              {sending ? "Göndərilir..." : "Göndər"}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -761,7 +818,6 @@ export default function ApplicationsMain() {
     },
   ]);
 
-  /* ── Aktivasiya state-i ── */
   const [activationRequests, setActivationRequests] = useState([
     {
       id: 201,
@@ -786,7 +842,11 @@ export default function ApplicationsMain() {
   const [sending, setSending] = useState(null);
   const [showCompose, setShowCompose] = useState(false);
 
-  /* counts */
+  /* ── Ana Popup state ── */
+  const [popup, setPopup] = useState({ isOpen: false });
+  const closePopup = () => setPopup((p) => ({ ...p, isOpen: false }));
+  const openPopup = (cfg) => setPopup({ isOpen: true, ...cfg });
+
   const pendingCount = inbox.filter((a) => a.status === "pending").length;
   const repliedCount = inbox.filter((a) => a.status === "replied").length;
   const outboxCount = outbox.length;
@@ -795,13 +855,13 @@ export default function ApplicationsMain() {
   ).length;
 
   const filteredInbox = inbox.filter((a) => a.status === activeTab);
-
   const toggleOpen = (id) => setOpenId(openId === id ? null : id);
 
   const handleReplyChange = (id, val) =>
     setReplyTexts((prev) => ({ ...prev, [id]: val }));
 
-  const handleSendReply = (id) => {
+  /* ── Cavab göndər — real iş ── */
+  const doSendReply = (id) => {
     const text = (replyTexts[id] || "").trim();
     if (!text) return;
     setSending(id);
@@ -817,6 +877,19 @@ export default function ApplicationsMain() {
       setOpenId(null);
       setSending(null);
     }, 600);
+  };
+
+  /* ── Cavab göndər — popup ilə ── */
+  const handleSendReply = (app) => {
+    const text = (replyTexts[app.id] || "").trim();
+    if (!text) return;
+    openPopup({
+      type: "success",
+      title: "Cavab göndərilsin?",
+      message: `"${app.senderName}" istifadəçisinə cavabınız göndəriləcək və müraciət cavablandırılmış kimi işarələnəcək.`,
+      confirmText: "Göndər",
+      onConfirm: () => doSendReply(app.id),
+    });
   };
 
   const handleSendChat = (msgId, newMsg) => {
@@ -853,10 +926,8 @@ export default function ApplicationsMain() {
     setActiveTab("outbox");
   };
 
-  /* ── Aktivasiya handlers ── */
-  const handleActivationSubmit = (e) => {
-    e.preventDefault();
-    if (!activationForm.email) return;
+  /* ── Aktivasiya göndər — real iş ── */
+  const doActivationSubmit = () => {
     const newReq = {
       id: Date.now(),
       email: activationForm.email,
@@ -871,10 +942,32 @@ export default function ApplicationsMain() {
     setTimeout(() => setActivationSent(false), 4000);
   };
 
+  /* ── Aktivasiya göndər — popup ilə ── */
+  const handleActivationSubmit = (e) => {
+    e.preventDefault();
+    if (!activationForm.email) return;
+    openPopup({
+      type: "success",
+      title: "Aktivasiya müraciəti göndərilsin?",
+      message: `"${activationForm.email}" ünvanına ${activationForm.package} paketi üçün aktivasiya müraciəti göndəriləcək.`,
+      confirmText: "Göndər",
+      onConfirm: doActivationSubmit,
+    });
+  };
+
+  /* ── Aktivasiya statusu — popup ilə ── */
   const handleActivationStatusChange = (id, newStatus) => {
-    setActivationRequests((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r)),
-    );
+    const req = activationRequests.find((r) => r.id === id);
+    openPopup({
+      type: "update",
+      title: "Status yenilənsin?",
+      message: `"${req?.email}" aktivasiyası tamamlandı kimi işarələnəcək.`,
+      confirmText: "Tamamlandı",
+      onConfirm: () =>
+        setActivationRequests((prev) =>
+          prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r)),
+        ),
+    });
   };
 
   const handleCopy = (id, text) => {
@@ -917,6 +1010,21 @@ export default function ApplicationsMain() {
 
   return (
     <div className="app-admin">
+      {/* ── Ana Popup ── */}
+      <Popup
+        isOpen={popup.isOpen}
+        type={popup.type}
+        title={popup.title}
+        message={popup.message}
+        confirmText={popup.confirmText}
+        cancelText="Ləğv et"
+        onConfirm={() => {
+          popup.onConfirm?.();
+          closePopup();
+        }}
+        onCancel={closePopup}
+      />
+
       {/* ── HEADER ── */}
       <div className="app-admin__header">
         <div>
@@ -977,7 +1085,7 @@ export default function ApplicationsMain() {
 
       {/* ── LIST ── */}
       <div className="app-admin__list">
-        {/* INBOX TABS */}
+        {/* INBOX */}
         {(activeTab === "pending" || activeTab === "replied") && (
           <>
             {filteredInbox.length === 0 && (
@@ -1075,20 +1183,22 @@ export default function ApplicationsMain() {
                       <div className="app-admin__reply-actions">
                         <button
                           className="app-admin__send-btn"
-                          onClick={() => handleSendReply(app.id)}
+                          onClick={() => handleSendReply(app)}
                           disabled={
                             sending === app.id ||
                             !(replyTexts[app.id] || "").trim()
                           }
                         >
                           {sending === app.id ? (
-                            <span className="app-admin__spinner" />
+                            <>
+                              <span className="app-admin__spinner" />{" "}
+                              Göndərilir...
+                            </>
                           ) : (
-                            <FiSend />
+                            <>
+                              <FiSend /> Cavab Göndər
+                            </>
                           )}
-                          {sending === app.id
-                            ? "Göndərilir..."
-                            : "Cavab Göndər"}
                         </button>
                         <span className="app-admin__reply-hint">
                           Cavab göndərildikdən sonra müraciət "Cavablandırılmış"
@@ -1103,7 +1213,7 @@ export default function ApplicationsMain() {
           </>
         )}
 
-        {/* OUTBOX TAB */}
+        {/* OUTBOX */}
         {activeTab === "outbox" && (
           <>
             {outbox.length === 0 && (
@@ -1124,10 +1234,9 @@ export default function ApplicationsMain() {
           </>
         )}
 
-        {/* ACTIVATION TAB */}
+        {/* ACTIVATION */}
         {activeTab === "activation" && (
           <div className="activation-section">
-            {/* SOL: Yeni aktivasiya formu */}
             <div className="app-admin__item activation-form-card">
               <div className="activation-form-card__header">
                 <div className="activation-form-card__icon">
@@ -1167,7 +1276,6 @@ export default function ApplicationsMain() {
                     required
                   />
                 </div>
-
                 <div className="activation-form-card__field">
                   <label>
                     <FiPackage /> Seçilmiş Paket
@@ -1187,7 +1295,6 @@ export default function ApplicationsMain() {
                     ))}
                   </div>
                 </div>
-
                 <button
                   type="submit"
                   className="app-admin__send-btn activation-form-card__submit"
@@ -1197,7 +1304,6 @@ export default function ApplicationsMain() {
               </form>
             </div>
 
-            {/* SAĞ: Gələn aktivasiya müraciətləri */}
             <div className="activation-requests">
               <div className="activation-requests__header">
                 <h3>
