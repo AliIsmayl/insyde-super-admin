@@ -23,10 +23,12 @@
 }
 
 .sidebar.closed {
+  border-radius: 20px;
   width: 75px;
 }
 .sidebar.open {
   width: 290px;
+  border-radius: 40px;
   cursor: default;
 }
 
