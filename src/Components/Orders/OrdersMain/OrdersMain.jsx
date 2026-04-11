@@ -20,60 +20,70 @@ import "./OrdersMain.scss";
 const initialOrders = [
   {
     id: 1,
+    orderNo: "INS-0038",
     user: { firstName: "Əli", lastName: "Məmmədov", userCode: "USR-0001" },
     design: { firstName: "Əli", lastName: "Məmmədov", profession: "Müəllim", initials: "ÆM", ringMode: "dark" },
     payment: { package: "Premium", months: 12, isPaid: true },
   },
   {
     id: 2,
+    orderNo: "INS-0039",
     user: { firstName: "Leyla", lastName: "Hüseynova", userCode: "USR-0002" },
     design: { firstName: "Leyla", lastName: "Hüseynova", profession: "Dizayner", initials: "LH", ringMode: "light" },
     payment: { package: "Basic", months: 6, isPaid: false },
   },
   {
     id: 3,
+    orderNo: "INS-0040",
     user: { firstName: "Nicat", lastName: "Quliyev", userCode: "USR-0003" },
     design: { firstName: "Nicat", lastName: "Quliyev", profession: "Proqramçı", initials: "NQ", ringMode: "dark" },
     payment: { package: "VIP", months: 12, isPaid: true },
   },
   {
     id: 4,
+    orderNo: "INS-0041",
     user: { firstName: "Aytən", lastName: "Əliyeva", userCode: "USR-0004" },
     design: { firstName: "Aytən", lastName: "Əliyeva", profession: "Marketoloq", initials: "AƏ", ringMode: "light" },
     payment: { package: "Free", months: 1, isPaid: true },
   },
   {
     id: 5,
+    orderNo: "INS-0042",
     user: { firstName: "Rauf", lastName: "İsmayılov", userCode: "USR-0005" },
     design: { firstName: "Rauf", lastName: "İsmayılov", profession: "Həkim", initials: "Rİ", ringMode: "dark" },
     payment: { package: "Premium", months: 3, isPaid: false },
   },
   {
     id: 6,
+    orderNo: "INS-0043",
     user: { firstName: "Gülnar", lastName: "Babayeva", userCode: "USR-0006" },
     design: { firstName: "Gülnar", lastName: "Babayeva", profession: "Mühasib", initials: "GB", ringMode: "light" },
     payment: { package: "Basic", months: 12, isPaid: true },
   },
   {
     id: 7,
+    orderNo: "INS-0044",
     user: { firstName: "Tural", lastName: "Nəsirov", userCode: "USR-0007" },
     design: { firstName: "Tural", lastName: "Nəsirov", profession: "Hüquqşünas", initials: "TN", ringMode: "dark" },
     payment: { package: "VIP", months: 6, isPaid: false },
   },
   {
     id: 8,
+    orderNo: "INS-0045",
     user: { firstName: "Sevinc", lastName: "Orucova", userCode: "USR-0008" },
     design: { firstName: "Sevinc", lastName: "Orucova", profession: "Müəllim", initials: "SO", ringMode: "light" },
     payment: { package: "Premium", months: 12, isPaid: true },
   },
   {
     id: 9,
+    orderNo: "INS-0046",
     user: { firstName: "Kamran", lastName: "Həsənov", userCode: "USR-0009" },
     design: { firstName: "Kamran", lastName: "Həsənov", profession: "Mühəndis", initials: "KH", ringMode: "dark" },
     payment: { package: "Basic", months: 3, isPaid: false },
   },
   {
     id: 10,
+    orderNo: "INS-0047",
     user: { firstName: "Nərmin", lastName: "Süleymanova", userCode: "USR-0010" },
     design: { firstName: "Nərmin", lastName: "Süleymanova", profession: "Psixoloq", initials: "NS", ringMode: "light" },
     payment: { package: "Premium", months: 6, isPaid: true },
@@ -101,11 +111,11 @@ export default function OrdersMain() {
 
   // ── Search filter ─────────────────────────────────────────────
   const filteredOrders = orders.filter((o) => {
-    const fullName =
-      `${o.user.firstName} ${o.user.lastName}`.toLowerCase();
+    const fullName = `${o.user.firstName} ${o.user.lastName}`.toLowerCase();
     const code = o.user.userCode.toLowerCase();
+    const orderNo = o.orderNo.toLowerCase();
     const q = search.toLowerCase().trim();
-    return fullName.includes(q) || code.includes(q);
+    return fullName.includes(q) || code.includes(q) || orderNo.includes(q);
   });
 
   // ── Info modal helpers ────────────────────────────────────────
@@ -183,7 +193,7 @@ export default function OrdersMain() {
           <input
             type="text"
             className="orders__search-input"
-            placeholder="Ad, soyad və ya istifadəçi kodu ilə axtar..."
+            placeholder="Ad, soyad, istifadəçi kodu və ya sifariş nömrəsi..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -208,6 +218,7 @@ export default function OrdersMain() {
           <thead>
             <tr>
               <th>#</th>
+              <th>Sifariş №</th>
               <th>
                 <span className="th-inner">
                   <FiUser /> İstifadəçi
@@ -228,7 +239,7 @@ export default function OrdersMain() {
           <tbody>
             {filteredOrders.length === 0 ? (
               <tr>
-                <td colSpan={4} className="orders__empty">
+                <td colSpan={5} className="orders__empty">
                   <FiSearch />
                   <span>Nəticə tapılmadı</span>
                 </td>
@@ -237,6 +248,9 @@ export default function OrdersMain() {
               filteredOrders.map((order, idx) => (
                 <tr key={order.id}>
                   <td className="orders__td-num">{idx + 1}</td>
+                  <td>
+                    <span className="orders__order-no">{order.orderNo}</span>
+                  </td>
 
                   {/* İSTİFADƏÇİ */}
                   <td>
