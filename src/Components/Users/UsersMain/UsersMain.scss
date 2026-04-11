@@ -374,7 +374,7 @@
             width: 80px;
             height: 80px;
             border-radius: 20px;
-            background-color: rgba(200, 167, 94, 0.1);
+            background-color: rgba(212, 175, 55, 0.1);
             color: var(--text-link);
             font-size: 32px;
             display: flex;
@@ -621,7 +621,7 @@
             &.is-top {
               background: linear-gradient(
                 to right,
-                rgba(200, 167, 94, 0.05),
+                rgba(212, 175, 55, 0.05),
                 transparent
               );
               border: 1px solid var(--border-focus);

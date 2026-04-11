@@ -31,10 +31,16 @@ function resolveIcon(iconCode) {
   return ALL_ICONS[iconCode.trim()] || null;
 }
 
+const CATEGORY_TYPES = [
+  { value: "əlaqə", label: "Əlaqə" },
+  { value: "əlavə", label: "Əlavə" },
+  { value: "sosial", label: "Sosial" },
+];
+
 const initialCategories = [
-  { id: 1, name: "İnstagram", iconCode: "FaInstagram" },
-  { id: 2, name: "Facebook", iconCode: "FaFacebook" },
-  { id: 3, name: "LinkedIn", iconCode: "FaLinkedin" },
+  { id: 1, name: "İnstagram", iconCode: "FaInstagram", type: "sosial" },
+  { id: 2, name: "Facebook", iconCode: "FaFacebook", type: "sosial" },
+  { id: 3, name: "LinkedIn", iconCode: "FaLinkedin", type: "əlaqə" },
 ];
 
 export default function CategoryMain() {
@@ -43,12 +49,14 @@ export default function CategoryMain() {
   // ── Form state ──────────────────────────────────────────────────
   const [iconCode, setIconCode] = useState("");
   const [catName, setCatName] = useState("");
+  const [catType, setCatType] = useState("əlaqə");
   const [confirmed, setConfirmed] = useState(false);
 
   // ── Düzəliş state ───────────────────────────────────────────────
   const [editId, setEditId] = useState(null);
   const [editIconCode, setEditIconCode] = useState("");
   const [editName, setEditName] = useState("");
+  const [editType, setEditType] = useState("əlaqə");
   const [editConfirmed, setEditConfirmed] = useState(false);
 
   // ── Popup state ─────────────────────────────────────────────────
@@ -73,10 +81,16 @@ export default function CategoryMain() {
     if (!catName.trim() || !confirmed || !previewValid) return;
     setCategories((prev) => [
       ...prev,
-      { id: Date.now(), name: catName.trim(), iconCode: iconCode.trim() },
+      {
+        id: Date.now(),
+        name: catName.trim(),
+        iconCode: iconCode.trim(),
+        type: catType,
+      },
     ]);
     setIconCode("");
     setCatName("");
+    setCatType("əlaqə");
     setConfirmed(false);
   };
 
@@ -99,6 +113,7 @@ export default function CategoryMain() {
     setEditId(cat.id);
     setEditIconCode(cat.iconCode);
     setEditName(cat.name);
+    setEditType(cat.type || "əlaqə");
     setEditConfirmed(true);
   };
 
@@ -106,6 +121,7 @@ export default function CategoryMain() {
     setEditId(null);
     setEditIconCode("");
     setEditName("");
+    setEditType("əlaqə");
     setEditConfirmed(false);
   };
 
@@ -114,7 +130,12 @@ export default function CategoryMain() {
     setCategories((prev) =>
       prev.map((c) =>
         c.id === editId
-          ? { ...c, name: editName.trim(), iconCode: editIconCode.trim() }
+          ? {
+              ...c,
+              name: editName.trim(),
+              iconCode: editIconCode.trim(),
+              type: editType,
+            }
           : c,
       ),
     );
@@ -208,6 +229,21 @@ export default function CategoryMain() {
             />
           </div>
 
+          <div className="cat__field">
+            <label>Növ</label>
+            <select
+              className="cat__select"
+              value={catType}
+              onChange={(e) => setCatType(e.target.value)}
+            >
+              {CATEGORY_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div className="cat__preview-row">
             <span className="cat__preview-label">Önizləmə:</span>
             {iconCode.trim() === "" ? (
@@ -293,6 +329,17 @@ export default function CategoryMain() {
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
                         />
+                        <select
+                          className="cat__select cat__select--sm"
+                          value={editType}
+                          onChange={(e) => setEditType(e.target.value)}
+                        >
+                          {CATEGORY_TYPES.map((t) => (
+                            <option key={t.value} value={t.value}>
+                              {t.label}
+                            </option>
+                          ))}
+                        </select>
                         <div className="cat__edit-preview">
                           {editPreviewValid ? (
                             <>
@@ -352,6 +399,11 @@ export default function CategoryMain() {
                         <div className="cat__item-info">
                           <span className="cat__item-name">{cat.name}</span>
                           <span className="cat__item-code">{cat.iconCode}</span>
+                          <span
+                            className={`cat__type-badge cat__type-badge--${(cat.type || "əlaqə").replace(/ə/g, "e")}`}
+                          >
+                            {cat.type || "əlaqə"}
+                          </span>
                         </div>
                       </div>
                       <div className="cat__item-actions">

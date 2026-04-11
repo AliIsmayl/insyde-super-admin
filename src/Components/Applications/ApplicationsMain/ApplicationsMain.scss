@@ -203,7 +203,7 @@
       border-color: var(--border-strong);
       .app-admin__chevron {
         transform: rotate(180deg);
-        color: var(--text-link, #c8a75e);
+        color: var(--text-link, #d4af37);
       }
       .app-admin__item-header {
         border-bottom: 1px solid var(--border-subtle);
@@ -1080,7 +1080,7 @@
     color: var(--text-primary);
     svg {
       font-size: 20px;
-      color: var(--btn-primary-bg, #c8a75e);
+      color: var(--btn-primary-bg, #d4af37);
     }
     h3 {
       margin: 0;
@@ -1199,8 +1199,8 @@
       background: var(--bg-hover);
     }
     &.selected {
-      background: rgba(200, 167, 94, 0.1);
-      border-color: rgba(200, 167, 94, 0.35);
+      background: rgba(212, 175, 55, 0.1);
+      border-color: rgba(212, 175, 55, 0.35);
     }
   }
   &__user-avatar {

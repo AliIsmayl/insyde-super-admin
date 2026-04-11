@@ -3,12 +3,12 @@ import {
   FiUsers,
   FiUserCheck,
   FiUserX,
-  FiDollarSign,
   FiEye,
   FiPackage,
   FiLink,
-  FiMapPin,
   FiAward,
+  FiChevronLeft,
+  FiChevronRight,
 } from "react-icons/fi";
 import {
   FaInstagram,
@@ -16,15 +16,20 @@ import {
   FaTelegram,
   FaTiktok,
   FaPhoneAlt,
+  FaFacebook,
+  FaYoutube,
+  FaTwitter,
+  FaLinkedin,
+  FaEnvelope,
 } from "react-icons/fa";
 import "./AnalysMain.scss";
 
-function AnalysMain() {
-  // Zaman filtri üçün state (day, week, month, year)
-  const [period, setPeriod] = useState("month");
+const TOOLS_PER_PAGE = 5;
 
-  // Zaman aralığına görə məlumatları dəyişmək üçün vuruq məntiqi
-  // Gəlir və oxunma sayı tam dəyişəcək, istifadəçi sayları isə cüzi (böyümə məntiqi ilə)
+function AnalysMain() {
+  const [period, setPeriod] = useState("month");
+  const [toolsPage, setToolsPage] = useState(0);
+
   const m = {
     day: 0.03,
     week: 0.25,
@@ -41,11 +46,9 @@ function AnalysMain() {
 
   // ================= MOCK DATALAR ================= //
 
-  // 1. Ümumi Statistika (Üst kartlar)
   const totalUsers = Math.round(5200 * userGrowth);
   const activeUsers = Math.round(totalUsers * 0.92);
   const blockedUsers = totalUsers - activeUsers;
-  const income = Math.round(14500 * m);
   const totalViews = Math.round(450000 * m);
 
   const summaryStats = [
@@ -71,13 +74,6 @@ function AnalysMain() {
       trend: "-1%",
     },
     {
-      title: "Ümumi Gəlir",
-      value: `${income} ₼`,
-      icon: <FiDollarSign />,
-      color: "#f59e0b",
-      trend: "+12%",
-    },
-    {
       title: "Ümumi Oxunma",
       value: totalViews,
       icon: <FiEye />,
@@ -86,7 +82,7 @@ function AnalysMain() {
     },
   ];
 
-  // 2. Paket Seçimi
+  // Paket Seçimi
   const packageData = [
     {
       name: "Free",
@@ -114,86 +110,98 @@ function AnalysMain() {
     },
   ];
 
-  // 3. Ən Çox Toxunulan Vasitələr
+  // Ən Çox Toxunulan Vasitələr (10 item — 2 page × 5)
   const toolsData = [
     {
       name: "Instagram",
       icon: <FaInstagram />,
       count: Math.round(120000 * m),
-      percent: 45,
+      percent: 28,
       color: "#E1306C",
     },
     {
       name: "WhatsApp",
       icon: <FaWhatsapp />,
       count: Math.round(85000 * m),
-      percent: 30,
+      percent: 20,
       color: "#25D366",
     },
     {
       name: "Telefon Zəngi",
       icon: <FaPhoneAlt />,
       count: Math.round(45000 * m),
-      percent: 15,
+      percent: 11,
       color: "#3b82f6",
     },
     {
       name: "TikTok",
       icon: <FaTiktok />,
-      count: Math.round(25000 * m),
-      percent: 8,
+      count: Math.round(40000 * m),
+      percent: 10,
       color: "#000000",
     },
     {
       name: "Telegram",
       icon: <FaTelegram />,
-      count: Math.round(15000 * m),
-      percent: 2,
+      count: Math.round(38000 * m),
+      percent: 9,
       color: "#0088cc",
     },
-  ];
-
-  // 4. Ən Çox İstifadə Edilən Bölgələr
-  const locationData = [
     {
-      country: "Azərbaycan",
-      city: "Bakı",
-      count: Math.round(280000 * m),
-      percent: 65,
+      name: "Facebook",
+      icon: <FaFacebook />,
+      count: Math.round(32000 * m),
+      percent: 8,
+      color: "#1877F2",
     },
     {
-      country: "Azərbaycan",
-      city: "Sumqayıt",
-      count: Math.round(65000 * m),
-      percent: 15,
+      name: "YouTube",
+      icon: <FaYoutube />,
+      count: Math.round(25000 * m),
+      percent: 6,
+      color: "#FF0000",
     },
     {
-      country: "Azərbaycan",
-      city: "Gəncə",
-      count: Math.round(45000 * m),
-      percent: 10,
+      name: "Twitter / X",
+      icon: <FaTwitter />,
+      count: Math.round(18000 * m),
+      percent: 4,
+      color: "#1DA1F2",
     },
     {
-      country: "Türkiyə",
-      city: "İstanbul",
-      count: Math.round(30000 * m),
-      percent: 7,
-    },
-    {
-      country: "Rusiya",
-      city: "Moskva",
-      count: Math.round(15000 * m),
+      name: "LinkedIn",
+      icon: <FaLinkedin />,
+      count: Math.round(12000 * m),
       percent: 3,
+      color: "#0A66C2",
+    },
+    {
+      name: "E-poçt",
+      icon: <FaEnvelope />,
+      count: Math.round(5000 * m),
+      percent: 1,
+      color: "#6366f1",
     },
   ];
 
-  // 5. Ən Çox Baxışı Olan 10 İstifadəçi
+  const totalToolsPages = Math.ceil(toolsData.length / TOOLS_PER_PAGE);
+  const paginatedTools = toolsData.slice(
+    toolsPage * TOOLS_PER_PAGE,
+    (toolsPage + 1) * TOOLS_PER_PAGE
+  );
+
+  // Top 10 İstifadəçi
   const topUsers = Array.from({ length: 10 }, (_, i) => ({
     rank: i + 1,
     name: `İstifadəçi ${i + 1}`,
     username: `@user_demo_${i + 1}`,
     views: Math.round((50000 - i * 4500) * m),
   }));
+
+  const handlePeriodChange = (p) => {
+    setPeriod(p);
+    setToolsPage(0);
+  };
 
   return (
     <div className="analys-main-modern">
@@ -206,32 +214,21 @@ function AnalysMain() {
           </p>
         </div>
 
-        {/* ZAMAN FİLTRİ */}
         <div className="period-filters">
-          <button
-            className={period === "day" ? "active" : ""}
-            onClick={() => setPeriod("day")}
-          >
-            Günlük
-          </button>
-          <button
-            className={period === "week" ? "active" : ""}
-            onClick={() => setPeriod("week")}
-          >
-            Həftəlik
-          </button>
-          <button
-            className={period === "month" ? "active" : ""}
-            onClick={() => setPeriod("month")}
-          >
-            Aylıq
-          </button>
-          <button
-            className={period === "year" ? "active" : ""}
-            onClick={() => setPeriod("year")}
-          >
-            İllik
-          </button>
+          {[
+            { key: "day", label: "Günlük" },
+            { key: "week", label: "Həftəlik" },
+            { key: "month", label: "Aylıq" },
+            { key: "year", label: "İllik" },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              className={period === key ? "active" : ""}
+              onClick={() => handlePeriodChange(key)}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -289,7 +286,7 @@ function AnalysMain() {
             </div>
           </div>
 
-          {/* 2. VASİTƏLƏR */}
+          {/* 2. VASİTƏLƏR (paginasiya ilə) */}
           <div className="dashboard-card">
             <div className="card-header">
               <h3>
@@ -297,7 +294,7 @@ function AnalysMain() {
               </h3>
             </div>
             <div className="card-body">
-              {toolsData.map((item, index) => (
+              {paginatedTools.map((item, index) => (
                 <div className="progress-row" key={index}>
                   <div className="row-info">
                     <div className="info-left">
@@ -322,36 +319,32 @@ function AnalysMain() {
                 </div>
               ))}
             </div>
-          </div>
 
-          {/* 3. BÖLGƏLƏR */}
-          <div className="dashboard-card">
-            <div className="card-header">
-              <h3>
-                <FiMapPin className="head-icon" /> Ən çox istifadə edilən bölgə
-              </h3>
-            </div>
-            <div className="card-body">
-              {locationData.map((item, index) => (
-                <div className="location-row" key={index}>
-                  <div className="loc-left">
-                    <div className="loc-texts">
-                      <span className="city">{item.city}</span>
-                      <span className="country">{item.country}</span>
-                    </div>
-                  </div>
-                  <div className="loc-right">
-                    <span className="loc-count">
-                      {item.count.toLocaleString()}
-                    </span>
-                    <span className="loc-percent">{item.percent}%</span>
-                  </div>
-                </div>
-              ))}
+            {/* PAGİNASİYA */}
+            <div className="card-pagination">
+              <button
+                className="pag-btn"
+                onClick={() => setToolsPage((p) => p - 1)}
+                disabled={toolsPage === 0}
+                aria-label="Əvvəlki səhifə"
+              >
+                <FiChevronLeft />
+              </button>
+              <span className="pag-info">
+                {toolsPage + 1} / {totalToolsPages}
+              </span>
+              <button
+                className="pag-btn"
+                onClick={() => setToolsPage((p) => p + 1)}
+                disabled={toolsPage === totalToolsPages - 1}
+                aria-label="Növbəti səhifə"
+              >
+                <FiChevronRight />
+              </button>
             </div>
           </div>
 
-          {/* 4. TOP 10 İSTİFADƏÇİ (Geniş Kart) */}
+          {/* 3. TOP 10 İSTİFADƏÇİ (Geniş Kart) */}
           <div className="dashboard-card top-users-card">
             <div className="card-header">
               <h3>

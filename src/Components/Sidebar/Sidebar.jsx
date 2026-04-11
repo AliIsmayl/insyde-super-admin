@@ -12,6 +12,7 @@ import { IoColorPaletteOutline } from "react-icons/io5";
 import { PiFileArchive } from "react-icons/pi";
 import { TbCategory } from "react-icons/tb";
 import { MdOutlinePayments } from "react-icons/md";
+import { FiShoppingBag } from "react-icons/fi";
 
 function Sidebar({ isOpen, setIsOpen }) {
   const [openMenus, setOpenMenus] = useState({});
@@ -60,6 +61,7 @@ function Sidebar({ isOpen, setIsOpen }) {
     { name: "İstifadəçilər", path: "/users", icon: <LuUsersRound /> },
     { name: "Kategoriyalar", path: "/categorys", icon: <TbCategory /> },
     { name: "Ödənişlər", path: "/payment", icon: <MdOutlinePayments /> },
+    { name: "Sifarişlər", path: "/orders", icon: <FiShoppingBag /> },
     { name: "Müraciətlər", path: "/applications", icon: <FaRegMessage /> },
     { name: "Paletlər", path: "/palets", icon: <IoColorPaletteOutline /> },
     { name: "Paketlər", path: "/packages", icon: <PiPackage /> },

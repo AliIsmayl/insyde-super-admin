@@ -293,8 +293,8 @@
       color: #2980b9;
     }
     &.plan--premium {
-      background: rgba(200, 167, 94, 0.15);
-      color: #c8a75e;
+      background: rgba(212, 175, 55, 0.15);
+      color: #d4af37;
     }
   }
 
@@ -406,7 +406,7 @@
     &--open {
       .arch__msg-chevron {
         transform: rotate(180deg);
-        color: var(--text-link, #c8a75e);
+        color: var(--text-link, #d4af37);
       }
       .arch__msg-header {
         border-bottom: 1px solid var(--border-subtle);
