@@ -126,7 +126,7 @@
   &__table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 600px;
+    min-width: 900px;
 
     thead tr {
       border-bottom: 1px solid var(--border-subtle);
@@ -228,9 +228,9 @@
       background: var(--bg-input);
     }
 
-    &--user { }
-    &--design { flex-direction: column; align-items: flex-start; gap: 6px; }
+    &--design  { flex-direction: column; align-items: flex-start; gap: 6px; }
     &--payment { flex-direction: column; align-items: flex-start; gap: 6px; }
+    &--status  { }
   }
 
   &__avatar {
@@ -246,6 +246,31 @@
     color: #fff;
     flex-shrink: 0;
     letter-spacing: -.5px;
+  }
+
+  /* Delivery method badge (matches avatar size) */
+  &__delivery-badge {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+
+    &--metro {
+      background: rgba(8, 145, 178, .12);
+      color: #0891b2;
+      border: 1px solid rgba(8, 145, 178, .2);
+    }
+
+    &--address {
+      background: rgba(16, 185, 129, .12);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, .2);
+    }
   }
 
   &__cell-info {
@@ -268,6 +293,24 @@
     font-size: 11px;
     color: var(--text-muted);
     font-family: "Courier New", monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── STATUS CHIP (table cell) ────────────────── */
+  &__status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+    font-family: inherit;
+
+    svg { font-size: 12px; }
   }
 
   /* ── MODE CHIP ───────────────────────────────── */
@@ -346,9 +389,16 @@
     border-radius: 24px;
     width: 100%;
     max-width: 420px;
+    max-height: 90vh;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
     animation: ordSlideUp .25s ease;
     box-shadow: 0 20px 60px rgba(0, 0, 0, .35);
+
+    &--md {
+      max-width: 480px;
+    }
   }
 
   /* ── Modal Header ─────────────────────────────── */
@@ -356,9 +406,9 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 22px 24px 18px;
+    padding: 20px 22px 16px;
     border-bottom: 1px solid var(--border-subtle);
-    position: relative;
+    flex-shrink: 0;
 
     h3 {
       flex: 1;
@@ -368,9 +418,11 @@
       color: var(--text-primary);
     }
 
-    &--user   .orders__modal-icon-wrap { background: rgba(59,130,246,.12); color: #3b82f6; }
-    &--design .orders__modal-icon-wrap { background: rgba(168,85,247,.12); color: #a855f7; }
-    &--payment .orders__modal-icon-wrap { background: rgba(34,197,94,.12); color: #22c55e; }
+    &--user    .orders__modal-icon-wrap { background: rgba(59, 130, 246, .12); color: #3b82f6; }
+    &--design  .orders__modal-icon-wrap { background: rgba(168, 85, 247, .12); color: #a855f7; }
+    &--payment .orders__modal-icon-wrap { background: rgba(34, 197, 94, .12);  color: #22c55e; }
+    &--status  .orders__modal-icon-wrap { background: rgba(99, 102, 241, .12); color: #6366f1; }
+    &--delivery .orders__modal-icon-wrap { background: rgba(8, 145, 178, .12); color: #0891b2; }
   }
 
   &__modal-icon-wrap {
@@ -401,12 +453,50 @@
     &:hover { color: var(--text-primary); background: var(--bg-hover); }
   }
 
+  /* Edit / Save action button in header */
+  &__modal-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 9px;
+    border: none;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+
+    svg { font-size: 13px; }
+
+    &--edit {
+      background: var(--bg-input);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-subtle);
+      &:hover { background: var(--bg-hover); color: var(--text-primary); }
+    }
+
+    &--save {
+      background: #22c55e;
+      color: #fff;
+      &:hover { opacity: .88; }
+    }
+  }
+
   /* ── Modal Body ───────────────────────────────── */
   &__modal-body {
     padding: 22px 24px 26px;
     display: flex;
     flex-direction: column;
     gap: 20px;
+    overflow-y: auto;
+
+    &--status {
+      padding: 16px 18px 20px;
+      gap: 0;
+    }
   }
 
   &__modal-avatar {
@@ -423,7 +513,6 @@
     letter-spacing: -.5px;
   }
 
-  /* Logo wrap for design modal */
   &__logo-wrap {
     display: flex;
     flex-direction: column;
@@ -456,7 +545,7 @@
   &__modal-fields {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
 
   &__field-row {
@@ -468,6 +557,10 @@
     background: var(--bg-input);
     border: 1px solid var(--border-input);
     border-radius: 12px;
+
+    &--note {
+      align-items: flex-start;
+    }
   }
 
   &__field-label {
@@ -500,10 +593,117 @@
     &--pkg {
       padding: 3px 12px;
       border-radius: 20px;
-      background: rgba(212,175,55,.15);
+      background: rgba(212, 175, 55, .15);
       color: #d4af37;
       font-size: 13px;
     }
+
+    &--wrap {
+      text-align: right;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    &--note {
+      text-align: right;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  }
+
+  &__no-note {
+    color: var(--text-muted);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  /* Editable input inside field-row */
+  &__field-input {
+    flex: 1;
+    min-width: 0;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--bg-panel);
+    border: 1px solid var(--border-focus);
+    border-radius: 8px;
+    padding: 6px 10px;
+    outline: none;
+    text-align: right;
+    transition: border-color .2s;
+
+    &:focus { border-color: #6366f1; }
+
+    &--sm {
+      max-width: 110px;
+      flex: none;
+    }
+  }
+
+  &__field-textarea {
+    flex: 1;
+    min-width: 0;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    background: var(--bg-panel);
+    border: 1px solid var(--border-focus);
+    border-radius: 8px;
+    padding: 8px 10px;
+    outline: none;
+    resize: vertical;
+    line-height: 1.55;
+    transition: border-color .2s;
+
+    &:focus { border-color: #6366f1; }
+  }
+
+  /* Method chip (delivery modal) */
+  &__method-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+
+    &--metro {
+      background: rgba(8, 145, 178, .12);
+      color: #0891b2;
+      border: 1px solid rgba(8, 145, 178, .25);
+    }
+
+    &--address {
+      background: rgba(16, 185, 129, .12);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, .25);
+    }
+  }
+
+  /* Cancel edit button */
+  &__cancel-edit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 13px;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-input);
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s;
+
+    &:hover { background: var(--bg-hover); color: var(--text-primary); }
   }
 
   /* ── Payment toggle button ───────────────────── */
@@ -525,17 +725,101 @@
     &:hover { opacity: .88; transform: translateY(-1px); }
     &:active { transform: translateY(0); }
 
-    &--pay {
-      background: #22c55e;
-      color: #fff;
-    }
+    &--pay   { background: #22c55e; color: #fff; }
     &--unpay {
-      background: rgba(245,158,11,.15);
+      background: rgba(245, 158, 11, .15);
       color: #f59e0b;
-      border: 1px solid rgba(245,158,11,.3) !important;
+      border: 1px solid rgba(245, 158, 11, .3) !important;
     }
 
     svg { font-size: 16px; }
+  }
+
+  /* ════════════════════════════════════════════════
+     STATUS STEPPER (modal)
+     ════════════════════════════════════════════════ */
+  &__status-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Each status row */
+  &__si {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .15s, border-color .15s;
+    width: 100%;
+    text-align: left;
+
+    &:not(:disabled):hover {
+      background: var(--bg-input);
+    }
+
+    &--active {
+      cursor: default;
+    }
+
+    &--past {
+      .orders__si-label {
+        color: var(--text-secondary);
+      }
+    }
+  }
+
+  /* Step icon circle */
+  &__si-dot {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 10px;
+    background: var(--bg-hover);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    transition: background .2s, color .2s;
+    flex-shrink: 0;
+  }
+
+  &__si-label {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    transition: color .2s;
+  }
+
+  &__si-badge {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    flex-shrink: 0;
+  }
+
+  /* Connector line between steps */
+  &__si-line {
+    width: 2px;
+    height: 10px;
+    background: var(--border-subtle);
+    margin-left: 31px; /* aligns with center of si-dot (14px padding + 18px half-dot) */
+    border-radius: 2px;
+    transition: background .3s;
+
+    &--done {
+      // color is set via inline style to match the preceding step's color
+    }
   }
 
   /* ── Animations ──────────────────────────────── */
@@ -560,8 +844,8 @@
 
   @media (max-width: 480px) {
     &__modal { border-radius: 20px; }
-    &__modal-header { padding: 18px 18px 14px; }
-    &__modal-body { padding: 18px 18px 22px; }
+    &__modal-header { padding: 16px 16px 14px; }
+    &__modal-body { padding: 16px 16px 20px; }
     &__title { font-size: 18px; }
   }
 }
