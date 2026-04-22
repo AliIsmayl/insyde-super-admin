@@ -74,7 +74,7 @@
   /* ===== ÜMUMİ STATİSTİKA KARTLARI ===== */
   .summary-cards-row {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 20px;
 
     .stat-card {
@@ -419,7 +419,7 @@
   /* --- BÖYÜK EKRAN: 1440px+ --- */
   @media screen and (min-width: 1440px) {
     .summary-cards-row {
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
     }
 
     .dashboard-grid {
@@ -430,7 +430,7 @@
   /* --- STANDART LAPTOP: 1025px – 1439px --- */
   @media screen and (max-width: 1439px) and (min-width: 1025px) {
     .summary-cards-row {
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
 
       .stat-card {
         padding: 16px;

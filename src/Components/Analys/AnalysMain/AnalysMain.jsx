@@ -9,6 +9,7 @@ import {
   FiAward,
   FiChevronLeft,
   FiChevronRight,
+  FiTag,
 } from "react-icons/fi";
 import {
   FaInstagram,
@@ -79,6 +80,13 @@ function AnalysMain() {
       icon: <FiEye />,
       color: "#8b5cf6",
       trend: "+25%",
+    },
+    {
+      title: "Promolu İstifadəçilər",
+      value: 7,
+      icon: <FiTag />,
+      color: "#d4af37",
+      trend: "+2",
     },
   ];
 
